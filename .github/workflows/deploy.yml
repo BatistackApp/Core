@@ -1,0 +1,773 @@
+name: 🚀 Deploy
+
+on:
+  # Déclenchement automatique après la completion réussie des workflows critiques
+
+
+  # Déclenchement manuel pour les déploiements d'urgence ou spécifiques
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      skip_validations:
+        description: 'Skip pre-deployment validations (emergency only)'
+        required: false
+        default: false
+        type: boolean
+      deployment_type:
+        description: 'Type of deployment'
+        required: false
+        default: 'standard'
+        type: choice
+        options:
+          - standard
+          - hotfix
+          - rollback
+      force_deploy:
+        description: 'Force deployment even if workflows failed (emergency only)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  PHP_VERSION: '8.3'
+  NODE_VERSION: '20'
+  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: write
+
+jobs:
+  # ============================================================================
+  # PRE-DEPLOYMENT VALIDATIONS
+  # ============================================================================
+  pre-deployment-checks:
+    name: 🔍 Pre-deployment validations
+    runs-on: ubuntu-latest
+    if: |
+      (github.event.inputs.skip_validations != 'true') &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.workflow_run.conclusion == 'success' ||
+       github.event.inputs.force_deploy == 'true')
+    outputs:
+      tests-passed: ${{ steps.check-tests.outputs.passed }}
+      quality-passed: ${{ steps.check-quality.outputs.passed }}
+      security-passed: ${{ steps.check-security.outputs.passed }}
+      deployment-approved: ${{ steps.final-check.outputs.approved }}
+    steps:
+      - name: 📋 Workflow trigger information
+        run: |
+          echo "🚀 Informations sur le déclenchement du déploiement"
+          echo "Event name: ${{ github.event_name }}"
+
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            echo "Déclenché par le workflow: ${{ github.event.workflow_run.name }}"
+            echo "Statut du workflow déclencheur: ${{ github.event.workflow_run.conclusion }}"
+            echo "Branche: ${{ github.event.workflow_run.head_branch }}"
+            echo "Commit: ${{ github.event.workflow_run.head_sha }}"
+
+            # Vérifier que le workflow déclencheur a réussi
+            if [[ "${{ github.event.workflow_run.conclusion }}" != "success" ]]; then
+              echo "❌ Le workflow déclencheur a échoué - Arrêt du déploiement"
+              echo "Pour forcer le déploiement malgré l'échec, utilisez le déclenchement manuel avec 'force_deploy: true'"
+              exit 1
+            fi
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Déclenchement manuel"
+            echo "Environnement cible: ${{ github.event.inputs.environment }}"
+            echo "Type de déploiement: ${{ github.event.inputs.deployment_type }}"
+            echo "Skip validations: ${{ github.event.inputs.skip_validations }}"
+            echo "Force deploy: ${{ github.event.inputs.force_deploy }}"
+          fi
+
+          echo "Branche actuelle: ${{ github.ref_name }}"
+          echo "Commit actuel: ${{ github.sha }}"
+
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+
+      - name: 🔍 Verify all critical workflows status
+        if: github.event_name == 'workflow_run'
+        run: |
+          echo "🔍 Vérification du statut de tous les workflows critiques..."
+
+          # Liste des workflows critiques
+          CRITICAL_WORKFLOWS=(
+            "🏗️ Module CI/CD"
+            "📊 Code Metrics & Quality Gate"
+            "🔒 Security Deep Scan"
+          )
+
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          ALL_SUCCESS=true
+
+          for workflow in "${CRITICAL_WORKFLOWS[@]}"; do
+            echo "Vérification du workflow: $workflow"
+
+            # Obtenir le statut du dernier run de ce workflow sur la branche
+            LATEST_RUN=$(gh run list --workflow="$workflow" --branch="$BRANCH" --limit=1 --json status,conclusion --jq '.[0]')
+
+            if [[ "$LATEST_RUN" == "null" || "$LATEST_RUN" == "" ]]; then
+              echo "⚠️ Aucun run trouvé pour le workflow: $workflow"
+              ALL_SUCCESS=false
+              continue
+            fi
+
+            STATUS=$(echo $LATEST_RUN | jq -r '.status')
+            CONCLUSION=$(echo $LATEST_RUN | jq -r '.conclusion')
+
+            echo "  Status: $STATUS, Conclusion: $CONCLUSION"
+
+            if [[ "$STATUS" != "completed" || "$CONCLUSION" != "success" ]]; then
+              echo "❌ Workflow échoué ou incomplet: $workflow"
+              ALL_SUCCESS=false
+            else
+              echo "✅ Workflow réussi: $workflow"
+            fi
+          done
+
+          if [[ "$ALL_SUCCESS" != "true" ]]; then
+            echo ""
+            echo "❌ Certains workflows critiques ont échoué ou sont incomplets"
+            echo "Le déploiement ne peut pas continuer automatiquement"
+            echo "Pour forcer le déploiement, utilisez le déclenchement manuel avec 'force_deploy: true'"
+            exit 1
+          else
+            echo ""
+            echo "✅ Tous les workflows critiques ont réussi - Déploiement autorisé"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: 🔍 Check latest CI status
+        id: check-tests
+        run: |
+          echo "🔍 Vérification du statut des tests CI..."
+          # Vérifier le statut du dernier workflow module-ci
+          LATEST_RUN=$(gh run list --workflow=module-ci.yml --limit=1 --json status,conclusion --jq '.[0]')
+          STATUS=$(echo $LATEST_RUN | jq -r '.status')
+          CONCLUSION=$(echo $LATEST_RUN | jq -r '.conclusion')
+
+          if [[ "$STATUS" == "completed" && "$CONCLUSION" == "success" ]]; then
+            echo "✅ Tests CI passés avec succès"
+            echo "passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Tests CI échoués ou en cours"
+            echo "passed=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: 🎯 Check quality gate status
+        id: check-quality
+        run: |
+          echo "🎯 Vérification du quality gate..."
+          # Vérifier le statut du dernier workflow code-metrics
+          LATEST_RUN=$(gh run list --workflow=code-metrics.yml --limit=1 --json status,conclusion --jq '.[0]')
+          STATUS=$(echo $LATEST_RUN | jq -r '.status')
+          CONCLUSION=$(echo $LATEST_RUN | jq -r '.conclusion')
+
+          if [[ "$STATUS" == "completed" && "$CONCLUSION" == "success" ]]; then
+            echo "✅ Quality gate validé"
+            echo "passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Quality gate non validé"
+            echo "passed=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: 🔒 Check security scan status
+        id: check-security
+        run: |
+          echo "🔒 Vérification des scans de sécurité..."
+          # Vérifier le statut du dernier workflow security
+          LATEST_RUN=$(gh run list --workflow=security.yml --limit=1 --json status,conclusion --jq '.[0]')
+          STATUS=$(echo $LATEST_RUN | jq -r '.status')
+          CONCLUSION=$(echo $LATEST_RUN | jq -r '.conclusion')
+
+          if [[ "$STATUS" == "completed" && "$CONCLUSION" == "success" ]]; then
+            echo "✅ Scans de sécurité validés"
+            echo "passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Scans de sécurité échoués"
+            echo "passed=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: ✅ Final deployment approval
+        id: final-check
+        run: |
+          TESTS_PASSED="${{ steps.check-tests.outputs.passed }}"
+          QUALITY_PASSED="${{ steps.check-quality.outputs.passed }}"
+          SECURITY_PASSED="${{ steps.check-security.outputs.passed }}"
+
+          if [[ "$TESTS_PASSED" == "true" && "$QUALITY_PASSED" == "true" && "$SECURITY_PASSED" == "true" ]]; then
+            echo "✅ Toutes les validations sont passées - Déploiement approuvé"
+            echo "approved=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Certaines validations ont échoué - Déploiement bloqué"
+            echo "approved=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+  # ============================================================================
+  # STAGING DEPLOYMENT (SSH)
+  # ============================================================================
+  deploy-staging:
+    name: 🚀 Deploy to Staging (SSH)
+    runs-on: ubuntu-latest
+    if: |
+      (
+        (github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'master') ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging') ||
+        (github.ref == 'refs/heads/master')
+      ) &&
+      (
+        needs.pre-deployment-checks.outputs.deployment-approved == 'true' ||
+        github.event.inputs.skip_validations == 'true' ||
+        github.event.inputs.force_deploy == 'true'
+      )
+    needs: [pre-deployment-checks]
+    environment:
+      name: staging
+      url: ${{ steps.deploy.outputs.staging-url }}
+    outputs:
+      deployment-id: ${{ steps.deploy.outputs.deployment-id }}
+      staging-url: ${{ steps.deploy.outputs.staging-url }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
+          coverage: none
+
+      - name: 📦 Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: 📦 Install Composer dependencies
+        run: composer install --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install npm dependencies
+        run: npm ci
+
+      - name: 🏗️ Build assets for staging
+        run: |
+          npm run build
+          echo "✅ Assets built successfully"
+
+      - name: 🔧 Prepare deployment package
+        run: |
+          echo "🔧 Préparation du package de déploiement..."
+
+          # Créer un dossier temporaire pour le déploiement
+          mkdir -p deployment-package
+
+          # Copier les fichiers nécessaires (exclure les dossiers inutiles)
+          rsync -av --exclude='node_modules' \
+                    --exclude='.git' \
+                    --exclude='tests' \
+                    --exclude='storage/logs/*' \
+                    --exclude='storage/framework/cache/*' \
+                    --exclude='storage/framework/sessions/*' \
+                    --exclude='storage/framework/views/*' \
+                    --exclude='.env.example' \
+                    --exclude='deployment-package' \
+                    . deployment-package/
+
+          # Créer une archive pour le transfert
+          tar -czf batistack-staging.tar.gz -C deployment-package .
+          echo "📦 Package de déploiement créé : batistack-staging.tar.gz"
+
+      - name: 🔑 Setup SSH key
+        run: |
+          echo "🔑 Configuration de la clé SSH..."
+          mkdir -p ~/.ssh
+          echo "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" > ~/.ssh/staging_key
+          chmod 600 ~/.ssh/staging_key
+
+          # Ajouter le serveur aux known_hosts (remplacez par votre IP/domaine)
+          ssh-keyscan -H ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 🚀 Deploy to staging server
+        id: deploy
+        run: |
+          echo "🚀 Déploiement vers le serveur de staging..."
+
+          # Variables de configuration (à adapter selon votre serveur)
+          STAGING_HOST="${{ secrets.STAGING_HOST }}"
+          STAGING_USER="${{ secrets.STAGING_USER }}"
+          STAGING_PATH="${{ secrets.STAGING_PATH }}"  # Ex: /var/www/batistack-staging
+          STAGING_URL="${{ secrets.STAGING_URL }}"    # Ex: https://staging.batistack.com
+          DEPLOYMENT_ID="staging-$(date +%s)"
+
+          echo "📡 Connexion au serveur staging : $STAGING_USER@$STAGING_HOST"
+
+          # Transférer le package
+          echo "📤 Transfert du package..."
+          scp -i ~/.ssh/staging_key batistack-staging.tar.gz $STAGING_USER@$STAGING_HOST:/tmp/
+
+          # Exécuter le déploiement sur le serveur distant
+          ssh -i ~/.ssh/staging_key $STAGING_USER@$STAGING_HOST << 'EOF'
+            set -e
+            echo "🔄 Déploiement en cours sur le serveur staging..."
+
+            # Variables locales
+            STAGING_PATH="${{ secrets.STAGING_PATH }}"
+            BACKUP_PATH="/tmp/batistack-backup-$(date +%s)"
+
+            # Créer une sauvegarde de l'ancienne version
+            if [ -d "$STAGING_PATH" ]; then
+              echo "💾 Sauvegarde de l'ancienne version..."
+              cp -r "$STAGING_PATH" "$BACKUP_PATH"
+            fi
+
+            # Créer le dossier de staging s'il n'existe pas
+            mkdir -p "$STAGING_PATH"
+
+            # Extraire le nouveau package
+            echo "📦 Extraction du package..."
+            cd "$STAGING_PATH"
+            tar -xzf /tmp/batistack-staging.tar.gz
+
+            # Restaurer les dossiers de storage persistants
+            if [ -d "$BACKUP_PATH/storage/app" ]; then
+              cp -r "$BACKUP_PATH/storage/app" storage/
+            fi
+            if [ -d "$BACKUP_PATH/storage/logs" ]; then
+              cp -r "$BACKUP_PATH/storage/logs" storage/
+            fi
+
+            # Copier le fichier .env spécifique au staging
+            if [ -f ".env.staging" ]; then
+              echo '${{ secrets.STAGING_ENV }}' > .env
+              echo "📄 Fichier .env staging configuré"
+            else
+              echo "⚠️ Fichier .env.staging non trouvé, utilisation de .env.example"
+              echo '${{ secrets.STAGING_ENV }}' > .env
+              # Générer une nouvelle clé d'application
+              php artisan key:generate --force
+            fi
+
+            # Installation des dépendances Composer
+            echo "📦 Installation des dépendances..."
+            composer install --no-dev --optimize-autoloader --no-interaction
+
+            # Migrations et cache
+            echo "🗄️ Migration de la base de données..."
+            php artisan migrate --force
+
+            echo "🧹 Nettoyage et reconstruction du cache..."
+            php artisan cache:clear
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # Optimisations
+            php artisan optimize
+            composer dump-autoload --optimize
+
+            # Permissions (adaptez selon votre serveur web)
+            echo "🔐 Configuration des permissions..."
+            chown -R www-data:www-data storage bootstrap/cache
+            chmod -R 775 storage bootstrap/cache
+
+            # Nettoyage
+            rm -f /tmp/batistack-staging.tar.gz
+
+            echo "✅ Déploiement staging terminé avec succès"
+          EOF
+
+          echo "🌐 URL de staging : $STAGING_URL"
+          echo "deployment-id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+          echo "staging-url=$STAGING_URL" >> $GITHUB_OUTPUT
+
+      - name: 🧪 Post-deployment health check
+        run: |
+          echo "🧪 Vérification de la santé de l'application..."
+          STAGING_URL="${{ steps.deploy.outputs.staging-url }}"
+
+          # Attendre quelques secondes pour que le serveur se stabilise
+          sleep 10
+
+          # Test de connectivité
+          if curl -f -s --max-time 30 "$STAGING_URL" > /dev/null; then
+            echo "✅ Application staging opérationnelle"
+            echo "📊 Test de santé réussi pour : $STAGING_URL"
+          else
+            echo "❌ Erreur lors du test de santé"
+            echo "🔍 Vérifiez manuellement l'URL : $STAGING_URL"
+            exit 1
+          fi
+
+      - name: 🧹 Cleanup SSH
+        if: always()
+        run: |
+          echo "🧹 Nettoyage des clés SSH..."
+          rm -f ~/.ssh/staging_key
+          rm -f batistack-staging.tar.gz
+
+  # ============================================================================
+  # PRODUCTION DEPLOYMENT (SSH)
+  # ============================================================================
+  deploy-production:
+    name: 🚀 Deploy to Production (SSH)
+    runs-on: ubuntu-latest
+    if: |
+      (
+        (github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'production') ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production') ||
+        (github.ref == 'refs/heads/production')
+      ) &&
+      (
+        needs.pre-deployment-checks.outputs.deployment-approved == 'true' ||
+        github.event.inputs.skip_validations == 'true' ||
+        github.event.inputs.force_deploy == 'true'
+      )
+    needs: [pre-deployment-checks]
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.production-url }}
+    outputs:
+      deployment-id: ${{ steps.deploy.outputs.deployment-id }}
+      production-url: ${{ steps.deploy.outputs.production-url }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
+          coverage: none
+
+      - name: 📦 Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: 📦 Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install npm dependencies
+        run: npm ci
+
+      - name: 🏗️ Build assets for production
+        run: |
+          npm run build
+          echo "✅ Assets built successfully"
+
+      - name: 🔧 Prepare deployment package
+        run: |
+          echo "🔧 Préparation du package de déploiement production..."
+
+          # Créer un dossier temporaire pour le déploiement
+          mkdir -p deployment-package
+
+          # Copier les fichiers nécessaires (exclure les dossiers inutiles)
+          rsync -av --exclude='node_modules' \
+                    --exclude='.git' \
+                    --exclude='tests' \
+                    --exclude='storage/logs/*' \
+                    --exclude='storage/framework/cache/*' \
+                    --exclude='storage/framework/sessions/*' \
+                    --exclude='storage/framework/views/*' \
+                    --exclude='.env.example' \
+                    --exclude='deployment-package' \
+                    . deployment-package/
+
+          # Créer une archive pour le transfert
+          tar -czf batistack-production.tar.gz -C deployment-package .
+          echo "📦 Package de déploiement production créé : batistack-production.tar.gz"
+
+      - name: 🔑 Setup SSH key for production
+        run: |
+          echo "🔑 Configuration de la clé SSH production..."
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" > ~/.ssh/production_key
+          chmod 600 ~/.ssh/production_key
+
+          # Ajouter le serveur aux known_hosts
+          ssh-keyscan -H ${{ secrets.PRODUCTION_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 🚀 Deploy to production server
+        id: deploy
+        run: |
+          echo "🚀 Déploiement vers le serveur de production..."
+
+          # Variables de configuration production
+          PRODUCTION_HOST="${{ secrets.PRODUCTION_HOST }}"
+          PRODUCTION_USER="${{ secrets.PRODUCTION_USER }}"
+          PRODUCTION_PATH="${{ secrets.PRODUCTION_PATH }}"  # Ex: /var/www/batistack.com
+          PRODUCTION_URL="${{ secrets.PRODUCTION_URL }}"    # Ex: https://batistack.com
+          DEPLOYMENT_ID="production-$(date +%s)"
+
+          echo "📡 Connexion au serveur production : $PRODUCTION_USER@$PRODUCTION_HOST"
+
+          # Transférer le package
+          echo "📤 Transfert du package production..."
+          scp -i ~/.ssh/production_key batistack-production.tar.gz $PRODUCTION_USER@$PRODUCTION_HOST:/tmp/
+
+          # Exécuter le déploiement sur le serveur distant
+          ssh -i ~/.ssh/production_key $PRODUCTION_USER@$PRODUCTION_HOST << 'EOF'
+            set -e
+            echo "🔄 Déploiement en cours sur le serveur production..."
+
+            # Variables locales
+            PRODUCTION_PATH="${{ secrets.PRODUCTION_PATH }}"
+            BACKUP_PATH="/tmp/batistack-backup-production-$(date +%s)"
+
+            # Créer une sauvegarde de l'ancienne version
+            if [ -d "$PRODUCTION_PATH" ]; then
+              echo "💾 Sauvegarde de l'ancienne version production..."
+              cp -r "$PRODUCTION_PATH" "$BACKUP_PATH"
+            fi
+
+            # Créer le dossier de production s'il n'existe pas
+            mkdir -p "$PRODUCTION_PATH"
+
+            # Extraire le nouveau package
+            echo "📦 Extraction du package production..."
+            cd "$PRODUCTION_PATH"
+            tar -xzf /tmp/batistack-production.tar.gz
+
+            # Restaurer les dossiers de storage persistants
+            if [ -d "$BACKUP_PATH/storage/app" ]; then
+              cp -r "$BACKUP_PATH/storage/app" storage/
+            fi
+            if [ -d "$BACKUP_PATH/storage/logs" ]; then
+              cp -r "$BACKUP_PATH/storage/logs" storage/
+            fi
+
+            # Copier le fichier .env spécifique à la production
+            if [ -f ".env.production" ]; then
+              echo '${{ secrets.PRODUCTION_ENV }}' > .env
+              echo "📄 Fichier .env production configuré"
+            else
+              echo "⚠️ Fichier .env.production non trouvé, utilisation de .env.example"
+              echo '${{ secrets.PRODUCTION_ENV }}' > .env
+              # Générer une nouvelle clé d'application
+              php artisan key:generate --force
+            fi
+
+            # Installation des dépendances Composer
+            echo "📦 Installation des dépendances production..."
+            composer install --no-dev --optimize-autoloader --no-interaction
+
+            # Migrations et cache
+            echo "🗄️ Migration de la base de données production..."
+            php artisan migrate --force
+
+            echo "🧹 Nettoyage et reconstruction du cache production..."
+            php artisan cache:clear
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # Optimisations production
+            php artisan optimize
+            composer dump-autoload --optimize
+
+            # Permissions (adaptez selon votre serveur web)
+            echo "🔐 Configuration des permissions production..."
+            chown -R www-data:www-data storage bootstrap/cache
+            chmod -R 775 storage bootstrap/cache
+
+            # Redémarrage des services (si nécessaire)
+            echo "🔄 Redémarrage des services..."
+            # sudo systemctl reload nginx
+            # sudo systemctl restart php8.3-fpm
+
+            # Nettoyage
+            rm -f /tmp/batistack-production.tar.gz
+
+            echo "✅ Déploiement production terminé avec succès"
+          EOF
+
+          echo "🌐 URL de production : $PRODUCTION_URL"
+          echo "deployment-id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+          echo "production-url=$PRODUCTION_URL" >> $GITHUB_OUTPUT
+
+      - name: 🧪 Post-deployment health check
+        run: |
+          echo "🧪 Vérification de la santé de l'application production..."
+          PRODUCTION_URL="${{ steps.deploy.outputs.production-url }}"
+
+          # Attendre quelques secondes pour que le serveur se stabilise
+          sleep 15
+
+          # Test de connectivité avec retry
+          for i in {1..3}; do
+            if curl -f -s --max-time 30 "$PRODUCTION_URL" > /dev/null; then
+              echo "✅ Application production opérationnelle"
+              echo "📊 Test de santé réussi pour : $PRODUCTION_URL"
+              break
+            else
+              echo "⚠️ Tentative $i/3 échouée, nouvelle tentative dans 10s..."
+              sleep 10
+            fi
+
+            if [ $i -eq 3 ]; then
+              echo "❌ Erreur lors du test de santé production"
+              echo "🔍 Vérifiez manuellement l'URL : $PRODUCTION_URL"
+              exit 1
+            fi
+          done
+
+      - name: 🧹 Cleanup SSH
+        if: always()
+        run: |
+          echo "🧹 Nettoyage des clés SSH production..."
+          rm -f ~/.ssh/production_key
+          rm -f batistack-production.tar.gz
+
+  # ============================================================================
+  # POST-DEPLOYMENT NOTIFICATIONS
+  # ============================================================================
+  notify-deployment:
+    name: 📢 Deployment notifications
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [deploy-staging, deploy-production]
+    steps:
+      - name: 📢 Send Slack notification
+        if: env.SLACK_WEBHOOK != ''
+        run: |
+          STAGING_STATUS="${{ needs.deploy-staging.result }}"
+          PRODUCTION_STATUS="${{ needs.deploy-production.result }}"
+
+          # Déterminer le statut global
+          if [[ "$STAGING_STATUS" == "success" && "$PRODUCTION_STATUS" == "success" ]]; then
+            STATUS="✅ Succès"
+            COLOR="good"
+          elif [[ "$STAGING_STATUS" == "success" && "$PRODUCTION_STATUS" == "skipped" ]]; then
+            STATUS="🟡 Staging déployé"
+            COLOR="warning"
+          else
+            STATUS="❌ Échec"
+            COLOR="danger"
+          fi
+
+          # Construire le message Slack
+          PAYLOAD=$(cat <<EOF
+          {
+            "attachments": [
+              {
+                "color": "$COLOR",
+                "title": "🚀 Rapport de déploiement BatiStack",
+                "fields": [
+                  {
+                    "title": "Statut global",
+                    "value": "$STATUS",
+                    "short": true
+                  },
+                  {
+                    "title": "Branche",
+                    "value": "${{ github.ref_name }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Staging",
+                    "value": "$STAGING_STATUS",
+                    "short": true
+                  },
+                  {
+                    "title": "Production",
+                    "value": "$PRODUCTION_STATUS",
+                    "short": true
+                  },
+                  {
+                    "title": "Commit",
+                    "value": "<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                  }
+                ],
+                "footer": "GitHub Actions",
+                "ts": $(date +%s)
+              }
+            ]
+          }
+          EOF
+          )
+
+          curl -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            "$SLACK_WEBHOOK"
+
+      - name: 📝 Create deployment issue on failure
+        if: failure()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const title = `🚨 Échec de déploiement - ${context.ref}`;
+            const body = `
+            ## 🚨 Échec de déploiement détecté
+
+            **Branche:** \`${context.ref}\`
+            **Commit:** ${context.sha}
+            **Workflow:** [${context.runId}](${context.payload.repository.html_url}/actions/runs/${context.runId})
+
+            ### 📊 Statuts des jobs
+            - **Staging:** ${{ needs.deploy-staging.result }}
+            - **Production:** ${{ needs.deploy-production.result }}
+
+            ### 🔍 Actions recommandées
+            1. Vérifier les logs du workflow
+            2. Analyser les erreurs de déploiement
+            3. Corriger les problèmes identifiés
+            4. Relancer le déploiement
+
+            ### 🔗 Liens utiles
+            - [Logs du workflow](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            - [Commit concerné](${context.payload.repository.html_url}/commit/${context.sha})
+
+            ---
+            *Issue créée automatiquement par le workflow de déploiement*
+            `;
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['deployment', 'bug', 'urgent']
+            });

@@ -1,0 +1,14 @@
+repository:
+  name: batistack2
+  description: "ERP moderne pour le BTP - Laravel/Livewire"
+  topics: [laravel, livewire, erp, btp, construction]
+
+  features:
+    issues: true
+    projects: true
+
+  merge_commit_title: "PR_TITLE"
+  merge_commit_message: "PR_BODY"
+
+  delete_branch_on_merge: false
+  enable_automated_security_fixes: true

@@ -1,0 +1,37 @@
+🎉 NOUVELLE VERSION DE BATISTACK
+=====================================
+
+Version: {{VERSION}}
+Date: {{DATE}}
+Branche: production
+
+📦 INFORMATIONS DE LA RELEASE
+-----------------------------
+- Version: {{VERSION}}
+- Date: {{DATE}}
+- Branche: production
+- Déployé par: {{ACTOR}}
+
+🏗️ MODULES MIS À JOUR
+---------------------
+Cette version inclut des améliorations sur les modules suivants :
+{{MODULES}}
+
+📋 CHANGELOG COMPLET
+-------------------
+Pour consulter le changelog détaillé de cette version, veuillez vous rendre sur :
+{{RELEASE_URL}}
+
+🚀 DÉPLOIEMENT
+--------------
+Cette version sera automatiquement déployée sur l'environnement de production 
+selon la planification définie.
+
+📞 SUPPORT
+----------
+Pour toute question concernant cette release, contactez l'équipe de développement.
+
+---
+Cet email a été généré automatiquement par le système de release de Batistack.
+Repository: {{REPOSITORY}}
+Commit: {{COMMIT_SHA}}

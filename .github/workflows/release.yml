@@ -1,0 +1,238 @@
+name: 📦 Release
+
+on:
+  push:
+    branches: [ production ]
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: write
+
+
+jobs:
+  release:
+    name: 📦 Semantic Release
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/production'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Analyze changed modules
+        id: modules
+        run: |
+          # Analyser les modules modifiés depuis le dernier tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            CHANGED_FILES=$(git diff --name-only $LAST_TAG..HEAD)
+          else
+            CHANGED_FILES=$(git ls-files)
+          fi
+
+          # Détecter les modules modifiés
+          MODULES=""
+          if echo "$CHANGED_FILES" | grep -q "app/.*Chantiers\|app/Models/Chantiers"; then
+            MODULES="$MODULES🏢 Chantiers "
+          fi
+          if echo "$CHANGED_FILES" | grep -q "app/.*RH\|app/Models/RH"; then
+            MODULES="$MODULES👥 RH "
+          fi
+          if echo "$CHANGED_FILES" | grep -q "app/.*Tiers\|app/Models/Tiers"; then
+            MODULES="$MODULES🤝 Tiers "
+          fi
+          if echo "$CHANGED_FILES" | grep -q "app/.*Commerce\|app/Models/Commerce"; then
+            MODULES="$MODULES💼 Commerce "
+          fi
+          if echo "$CHANGED_FILES" | grep -q "app/.*Produit\|app/Models/Produit"; then
+            MODULES="$MODULES📦 Produits "
+          fi
+          if echo "$CHANGED_FILES" | grep -q "app/.*Core\|app/Models/Core"; then
+            MODULES="$MODULES⚙️ Core "
+          fi
+
+          echo "modules=$MODULES" >> $GITHUB_OUTPUT
+
+      - name: 🚀 Semantic Release
+        id: semantic_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          MODULES_CHANGED: ${{ steps.modules.outputs.modules }}
+        run: |
+          npx semantic-release
+          # Capturer la version créée
+          NEW_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: 📧 Generate Email Content
+        if: success() && steps.semantic_release.outputs.version != ''
+        id: email
+        run: |
+          VERSION="${{ steps.semantic_release.outputs.version }}"
+          MODULES="${{ steps.modules.outputs.modules }}"
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/$VERSION"
+
+          # Générer le contenu de l'email
+          cat > email_content.html << EOF
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta charset="UTF-8">
+              <style>
+                  body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                  .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
+                  .content { padding: 20px; }
+                  .version { background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; }
+                  .modules { background: #e8f5e8; border-radius: 8px; padding: 15px; margin: 20px 0; }
+                  .footer { background: #f8f9fa; padding: 15px; text-align: center; font-size: 0.9em; }
+                  .btn { display: inline-block; background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+              </style>
+          </head>
+          <body>
+              <div class="header">
+                  <h1>🎉 Nouvelle version de Batistack</h1>
+                  <h2>Version $VERSION</h2>
+              </div>
+
+              <div class="content">
+                  <div class="version">
+                      <h3>📦 Informations de la release</h3>
+                      <ul>
+                          <li><strong>Version :</strong> $VERSION</li>
+                          <li><strong>Date :</strong> $(date '+%d/%m/%Y à %H:%M')</li>
+                          <li><strong>Branche :</strong> production</li>
+                      </ul>
+                  </div>
+
+                  <div class="modules">
+                      <h3>🏗️ Modules mis à jour</h3>
+                      <p>Cette version inclut des améliorations sur les modules suivants :</p>
+                      <p><strong>$MODULES</strong></p>
+                  </div>
+
+                  <h3>📋 Changelog complet</h3>
+                  <p>Pour consulter le changelog détaillé de cette version, veuillez vous rendre sur :</p>
+                  <p><a href="$RELEASE_URL" class="btn">📖 Voir le changelog complet</a></p>
+
+                  <h3>🚀 Déploiement</h3>
+                  <p>Cette version sera automatiquement déployée sur l'environnement de production selon la planification définie.</p>
+              </div>
+
+              <div class="footer">
+                  <p>Cet email a été généré automatiquement par le système de release de Batistack.</p>
+                  <p>Pour toute question, contactez l'équipe de développement.</p>
+              </div>
+          </body>
+          </html>
+          EOF
+
+          echo "email_generated=true" >> $GITHUB_OUTPUT
+
+      - name: 📬 Send Slack Notification
+        if: success() && steps.semantic_release.outputs.version != ''
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          custom_payload: |
+            {
+              "channel": "#releases",
+              "username": "Batistack Release Bot",
+              "icon_emoji": ":rocket:",
+              "attachments": [
+                {
+                  "color": "good",
+                  "title": "🎉 Nouvelle version de Batistack publiée !",
+                  "title_link": "https://github.com/${{ github.repository }}/releases/tag/${{ steps.semantic_release.outputs.version }}",
+                  "fields": [
+                    {
+                      "title": "Version",
+                      "value": "${{ steps.semantic_release.outputs.version }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Modules modifiés",
+                      "value": "${{ steps.modules.outputs.modules || 'Aucun module spécifique' }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Repository",
+                      "value": "${{ github.repository }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Déployé par",
+                      "value": "${{ github.actor }}",
+                      "short": true
+                    }
+                  ],
+                  "footer": "Batistack Release System",
+                  "ts": ${{ github.event.head_commit.timestamp && github.event.head_commit.timestamp || 'null' }}
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: 📧 Upload Email Content
+        if: success() && steps.email.outputs.email_generated == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog-email-${{ steps.semantic_release.outputs.version }}
+          path: email_content.html
+          retention-days: 30
+
+      - name: 📮 Send Changelog Email
+        if: success() && steps.email.outputs.email_generated == 'true'
+        run: |
+          # Installer nodemailer si nécessaire
+          npm install nodemailer
+
+          # Envoyer l'email
+          node .github/scripts/send-changelog-email.js
+        env:
+          RELEASE_VERSION: ${{ steps.semantic_release.outputs.version }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+
+      - name: 📊 Release Summary
+        if: success()
+        run: |
+          echo "## 🎉 Release créée avec succès !" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.semantic_release.outputs.version }}" ]; then
+            echo "### 📦 Version publiée : ${{ steps.semantic_release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "### 🏗️ Modules modifiés dans cette release :" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.modules.outputs.modules }}" ]; then
+            echo "${{ steps.modules.outputs.modules }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Aucun module spécifique détecté" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Actions effectuées :" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Version détectée automatiquement par semantic-release" >> $GITHUB_STEP_SUMMARY
+          echo "- 📝 Changelog généré automatiquement" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏷️ Tag Git créé automatiquement" >> $GITHUB_STEP_SUMMARY
+          echo "- 📦 Release GitHub créée automatiquement" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.semantic_release.outputs.version }}" ]; then
+            echo "- 📬 Notification Slack envoyée" >> $GITHUB_STEP_SUMMARY
+            echo "- 📧 Email de changelog généré et disponible en artifact" >> $GITHUB_STEP_SUMMARY
+            echo "- 📮 Email automatiquement envoyé à changelog@batistack.ovh" >> $GITHUB_STEP_SUMMARY
+          fi

@@ -1,0 +1,191 @@
+name: ✨ Feature Request
+description: Proposer une nouvelle fonctionnalité pour Batistack
+title: "[FEATURE] "
+labels: ["enhancement", "needs-discussion"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de proposer cette amélioration ! Vos idées nous aident à faire évoluer Batistack.
+
+        **Avant de continuer :**
+        - [ ] Vérifiez que cette fonctionnalité n'existe pas déjà
+        - [ ] Consultez la [roadmap](https://github.com/vortechstudio/batistack2/blob/main/ROADMAP.md)
+        - [ ] Assurez-vous que c'est cohérent avec l'écosystème BTP
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: 🏗️ Module concerné
+      description: Dans quel module cette fonctionnalité s'intégrerait-elle ?
+      options:
+        - "🏗️ Chantiers"
+        - "👥 RH (Ressources Humaines)"
+        - "🏢 Tiers (Clients/Fournisseurs)"
+        - "💰 Commerce (Devis/Factures)"
+        - "📦 Produits & Services"
+        - "⚙️ Core (Infrastructure)"
+        - "🖥️ Interface/UX"
+        - "📱 Application Desktop"
+        - "🌐 API"
+        - "🆕 Nouveau module"
+        - "🔄 Transversal (plusieurs modules)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 📊 Priorité business
+      description: Quelle est l'importance de cette fonctionnalité ?
+      options:
+        - "🔴 Critique - Bloque l'adoption"
+        - "🟠 Haute - Amélioration majeure"
+        - "🟡 Moyenne - Nice to have"
+        - "🔵 Basse - Confort d'usage"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user_type
+    attributes:
+      label: 👤 Type d'utilisateur
+      description: Qui bénéficierait principalement de cette fonctionnalité ?
+      options:
+        - "👨‍💼 Chef d'entreprise"
+        - "👷‍♂️ Chef de chantier"
+        - "👥 Équipe RH"
+        - "💰 Comptable/Gestionnaire"
+        - "📋 Administrateur"
+        - "👤 Salarié (portail)"
+        - "🏢 Client final"
+        - "🔧 Développeur/Intégrateur"
+        - "🌐 Tous les utilisateurs"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🎯 Problème à résoudre
+      description: Quel problème métier cette fonctionnalité résoudrait-elle ?
+      placeholder: |
+        Exemple : Actuellement, il n'est pas possible de planifier automatiquement les interventions récurrentes sur les chantiers, ce qui oblige à créer manuellement chaque tâche de maintenance.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Solution proposée
+      description: Décrivez votre idée de fonctionnalité
+      placeholder: |
+        Exemple : Ajouter un système de planification récurrente dans le module Chantiers qui permettrait de :
+        - Définir des modèles d'intervention (maintenance, contrôle qualité, etc.)
+        - Configurer la fréquence (hebdomadaire, mensuelle, etc.)
+        - Assigner automatiquement les ressources
+        - Générer les tâches dans le planning
+    validations:
+      required: true
+
+  - type: textarea
+    id: user_story
+    attributes:
+      label: 📖 User Story
+      description: Décrivez le parcours utilisateur souhaité
+      placeholder: |
+        En tant que chef de chantier,
+        Je veux pouvoir programmer des interventions récurrentes,
+        Afin de ne pas oublier les tâches de maintenance et d'optimiser la planification.
+
+        Critères d'acceptation :
+        - [ ] Je peux créer un modèle d'intervention
+        - [ ] Je peux définir une récurrence
+        - [ ] Les tâches sont créées automatiquement
+        - [ ] Je reçois des notifications de rappel
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockup
+    attributes:
+      label: 🎨 Maquette/Wireframe (optionnel)
+      description: Ajoutez des captures d'écran, maquettes ou liens vers des prototypes
+      placeholder: |
+        Vous pouvez glisser-déposer des images ici ou fournir des liens vers :
+        - Figma
+        - Sketch
+        - Balsamiq
+        - Ou tout autre outil de maquettage
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives considérées
+      description: Avez-vous pensé à d'autres approches ?
+      placeholder: |
+        - Alternative 1 : Utiliser un système de notifications simples
+        - Alternative 2 : Intégration avec un outil externe de planning
+        - Pourquoi la solution proposée est préférable...
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: 📈 Impact attendu
+      description: Quels bénéfices cette fonctionnalité apporterait-elle ?
+      placeholder: |
+        - Gain de temps : X heures/semaine économisées
+        - Réduction des erreurs de planification
+        - Amélioration de la satisfaction client
+        - ROI estimé...
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: ⚙️ Complexité estimée
+      description: Selon vous, quelle serait la complexité de développement ?
+      options:
+        - "🟢 Simple - Quelques heures"
+        - "🟡 Moyenne - Quelques jours"
+        - "🟠 Complexe - Quelques semaines"
+        - "🔴 Très complexe - Plusieurs mois"
+        - "❓ Je ne sais pas"
+
+  - type: textarea
+    id: technical_notes
+    attributes:
+      label: 🔧 Notes techniques (optionnel)
+      description: Suggestions techniques, contraintes, intégrations nécessaires...
+      placeholder: |
+        - Intégration avec l'API de calendrier
+        - Nouveaux modèles Eloquent nécessaires
+        - Impact sur les performances
+        - Compatibilité avec les modules existants
+
+  - type: checkboxes
+    id: roadmap_alignment
+    attributes:
+      label: 🗺️ Alignement roadmap
+      description: Cette fonctionnalité s'aligne-t-elle avec la roadmap existante ?
+      options:
+        - label: J'ai consulté la roadmap du projet
+          required: true
+        - label: Cette fonctionnalité complète les modules existants
+          required: false
+        - label: Cette fonctionnalité nécessite de nouveaux modules
+          required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      options:
+        - label: J'ai vérifié que cette fonctionnalité n'existe pas déjà
+          required: true
+        - label: J'ai consulté la documentation utilisateur
+          required: true
+        - label: Cette demande concerne bien le secteur BTP
+          required: true
+        - label: J'ai fourni suffisamment de contexte métier
+          required: true

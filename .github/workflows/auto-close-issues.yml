@@ -1,0 +1,73 @@
+name: Auto-Close Issues
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+  pull-requests: read
+  contents: read
+
+jobs:
+  close-linked-issues:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check PR Merge Status
+      id: check-merge
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const pr = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.payload.pull_request.number
+          })
+          return pr.data.merged
+
+    - name: Get Linked Issues
+      if: >
+        fromJson(steps.get-issues.outputs.result).length > 0
+      id: get-issues
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const body = (context.payload.pull_request.body || '')
+          const issueNumbers = body.match(/#\d+/g) || []
+          return issueNumbers.map(num => num.slice(1))
+
+    - name: Close Issues
+      if: steps.get-issues.outputs.result != '[]'
+      uses: actions/github-script@v8
+      env:
+        DRY_RUN: false
+      with:
+        script: |
+          const issues = JSON.parse('${{ steps.get-issues.outputs.result }}')
+
+          for (const number of issues) {
+            if (process.env.DRY_RUN === 'false') {
+              console.log(`Fermeture de l'issue #${number}...`)
+
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: number,
+                state: 'closed'
+              })
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: number,
+                body: `Fermeture automatique : Résolu par PR #${{ github.event.pull_request.number }}`
+              })
+
+              console.log(`Issue #${number} fermée avec succès`)
+            } else {
+              console.log(`[DRY RUN] Fermeture simulée de l'issue #${number}`)
+            }
+          }
+
+          console.log(`Traitement terminé pour ${issues.length} issue(s)`)

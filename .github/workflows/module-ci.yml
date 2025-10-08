@@ -1,0 +1,422 @@
+name: 🏗️ Module CI/CD
+
+on:
+  push:
+    branches: [ master, production ]
+  workflow_dispatch:
+    inputs:
+      modules:
+        description: 'Modules à tester (séparés par des espaces)'
+        required: false
+        default: 'auto-detect'
+      test_type:
+        description: 'Type de test'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - tests-only
+          - security-only
+          - performance-only
+          - quality-only
+      environment:
+        description: 'Environnement cible'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - staging
+          - production
+
+env:
+  PHP_VERSION: '8.3'
+  NODE_VERSION: '20'
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: write
+
+jobs:
+  detect-environment:
+    name: 🌍 Détection de l'environnement
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.env.outputs.environment }}
+      test-level: ${{ steps.env.outputs.test-level }}
+      deploy-ready: ${{ steps.env.outputs.deploy-ready }}
+    steps:
+      - name: 🌍 Déterminer l'environnement
+        id: env
+        run: |
+          if [[ "${{ github.event.inputs.environment }}" != "" && "${{ github.event.inputs.environment }}" != "auto" ]]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/production" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          fi
+
+          # Définir le niveau de tests selon l'environnement
+          case "${{ steps.env.outputs.environment || 'staging' }}" in
+            "staging")
+              echo "test-level=complete" >> $GITHUB_OUTPUT
+              echo "deploy-ready=true" >> $GITHUB_OUTPUT
+              ;;
+            "production")
+              echo "test-level=strict" >> $GITHUB_OUTPUT
+              echo "deploy-ready=true" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+  detect-changes:
+    name: 🔍 Détection des modules modifiés
+    runs-on: ubuntu-latest
+    needs: detect-environment
+    outputs:
+      modules: ${{ steps.detect.outputs.modules }}
+      modules-json: ${{ steps.detect.outputs.modules-json }}
+      has-changes: ${{ steps.detect.outputs.has-changes }}
+      all-modules: ${{ steps.detect.outputs.all-modules }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: 🔍 Détecter les modules modifiés
+        id: detect
+        run: |
+          # Pour les environnements de staging et production, tester tous les modules
+          if [[ "${{ needs.detect-environment.outputs.environment }}" == "staging" || "${{ needs.detect-environment.outputs.environment }}" == "production" ]]; then
+            echo "modules=chantiers rh tiers commerce produit core" >> $GITHUB_OUTPUT
+            echo 'modules-json=["chantiers","rh","tiers","commerce","produit","core"]' >> $GITHUB_OUTPUT
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            echo "all-modules=true" >> $GITHUB_OUTPUT
+            echo "🎯 Mode ${{ needs.detect-environment.outputs.environment }}: tous les modules seront testés"
+            exit 0
+          fi
+
+          # Détection manuelle via workflow_dispatch
+          if [[ "${{ github.event.inputs.modules }}" != "" && "${{ github.event.inputs.modules }}" != "auto-detect" ]]; then
+            modules_input="${{ github.event.inputs.modules }}"
+            echo "modules=$modules_input" >> $GITHUB_OUTPUT
+            # Convertir la liste séparée par des espaces en JSON
+            modules_json=$(echo "$modules_input" | sed 's/ /","/g' | sed 's/^/["/' | sed 's/$/"]/')
+            echo "modules-json=$modules_json" >> $GITHUB_OUTPUT
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            echo "all-modules=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Détection automatique des changements
+          changed_files=$(git diff --name-only HEAD~1 2>/dev/null || echo "")
+          modules=()
+
+          if echo "$changed_files" | grep -E "(app/Models/Chantiers/|app/Livewire/Chantier|app/Enums/Chantiers/|tests/.*Chantier)" > /dev/null; then
+            modules+=("chantiers")
+          fi
+
+          if echo "$changed_files" | grep -E "(app/Models/RH/|app/Livewire/Humans/|app/Enums/RH/|app/Actions/RH/|tests/.*RH)" > /dev/null; then
+            modules+=("rh")
+          fi
+
+          if echo "$changed_files" | grep -E "(app/Models/Tiers/|app/Livewire/Tiers/|app/Enums/Tiers/|tests/.*Tiers)" > /dev/null; then
+            modules+=("tiers")
+          fi
+
+          if echo "$changed_files" | grep -E "(app/Models/Commerce/|app/Enums/Commerce/|tests/.*Commerce)" > /dev/null; then
+            modules+=("commerce")
+          fi
+
+          if echo "$changed_files" | grep -E "(app/Models/Produit/|app/Livewire/Produit/|app/Enums/Produits/|app/Actions/Produit/|tests/.*Produit)" > /dev/null; then
+            modules+=("produit")
+          fi
+
+          if echo "$changed_files" | grep -E "(app/Models/Core/|app/Livewire/Core/|app/Enums/Core/|tests/.*Core)" > /dev/null; then
+            modules+=("core")
+          fi
+
+          if [ ${#modules[@]} -eq 0 ]; then
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            echo "all-modules=false" >> $GITHUB_OUTPUT
+          else
+            echo "modules=${modules[*]}" >> $GITHUB_OUTPUT
+            # Convertir le tableau en JSON
+            modules_json="["
+            for i in "${!modules[@]}"; do
+              if [ $i -gt 0 ]; then
+                modules_json+=","
+              fi
+              modules_json+="\"${modules[$i]}\""
+            done
+            modules_json+="]"
+            echo "modules-json=$modules_json" >> $GITHUB_OUTPUT
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            echo "all-modules=false" >> $GITHUB_OUTPUT
+          fi
+
+  setup:
+    name: ⚙️ Configuration
+    runs-on: ubuntu-latest
+    needs: [detect-environment, detect-changes]
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, imap
+          coverage: xdebug
+
+      - name: 📦 Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}-${{ needs.detect-environment.outputs.environment }}
+          restore-keys: |
+            composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}-
+            composer-${{ runner.os }}-
+
+      - name: 🎯 Install Composer dependencies
+        run: |
+          if [[ "${{ needs.detect-environment.outputs.environment }}" == "production" ]]; then
+            composer install --no-dev --no-progress --prefer-dist --optimize-autoloader
+          else
+            composer install --no-progress --prefer-dist --optimize-autoloader
+          fi
+
+      - name: 📁 Create reports directory
+        run: mkdir -p reports/module-ci/${{ needs.detect-environment.outputs.environment }}
+
+      - name: 💾 Cache vendor directory
+        uses: actions/cache/save@v4
+        with:
+          path: vendor
+          key: vendor-${{ github.sha }}-${{ needs.detect-environment.outputs.environment }}
+
+  tests:
+    name: 🧪 Tests - ${{ matrix.module }} (${{ needs.detect-environment.outputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [detect-environment, detect-changes, setup]
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    strategy:
+      fail-fast: ${{ needs.detect-environment.outputs.environment == 'production' }}
+      matrix:
+        module: ${{ fromJson(needs.detect-changes.outputs.modules-json) }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, imap
+          coverage: xdebug
+
+      - name: 💾 Restore vendor cache
+        uses: actions/cache/restore@v4
+        with:
+          path: vendor
+          key: vendor-${{ github.sha }}-${{ needs.detect-environment.outputs.environment }}
+
+      - name: 📋 Copy environment file
+        run: |
+          if [[ "${{ needs.detect-environment.outputs.environment }}" == "production" ]]; then
+            cat > .env << 'EOF'
+          ${{ secrets.STAGING_ENV }}
+          EOF
+          else
+            cat > .env << 'EOF'
+          ${{ secrets.GH_ENV }}
+          EOF
+          fi
+
+      - name: 🔑 Generate application key
+        run: php artisan key:generate
+
+      - name: 🗃️ Run migrations
+        run: php artisan migrate --force
+
+      - name: 🧪 Run tests for ${{ matrix.module }}
+        run: |
+          test_type="${{ github.event.inputs.test_type || 'all' }}"
+          environment="${{ needs.detect-environment.outputs.environment }}"
+
+          if [[ "$test_type" == "tests-only" || "$test_type" == "all" ]]; then
+            case "$environment" in
+              "staging")
+                # Tests complets avec couverture pour master
+                ./vendor/bin/pest --coverage --coverage-clover=coverage-${{ matrix.module }}.xml --group=${{ matrix.module }}
+                ;;
+              "production")
+                # Tests stricts pour production
+                ./vendor/bin/pest --coverage --coverage-clover=coverage-${{ matrix.module }}.xml --group=${{ matrix.module }} --stop-on-failure --strict-coverage
+                ;;
+            esac
+          fi
+
+      - name: 📊 Upload coverage reports
+        if: success() && (needs.detect-environment.outputs.environment == 'staging' || needs.detect-environment.outputs.environment == 'production')
+        uses: codecov/codecov-action@v5
+        with:
+          file: coverage-${{ matrix.module }}.xml
+          flags: ${{ matrix.module }}
+          name: ${{ matrix.module }}-coverage-${{ needs.detect-environment.outputs.environment }}
+
+  security:
+    name: 🔒 Analyse de sécurité (${{ needs.detect-environment.outputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [detect-environment, detect-changes, setup]
+    if: needs.detect-changes.outputs.has-changes == 'true' && (needs.detect-environment.outputs.environment == 'staging' || needs.detect-environment.outputs.environment == 'production')
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, imap
+
+      - name: 💾 Restore vendor cache
+        uses: actions/cache/restore@v4
+        with:
+          path: vendor
+          key: vendor-${{ github.sha }}-${{ needs.detect-environment.outputs.environment }}
+
+      - name: 🔍 Security audit
+        run: composer audit
+
+      - name: 🛡️ Check for hardcoded secrets
+        run: |
+          echo "🔍 Recherche de secrets en dur..."
+          if grep -r "password\|secret\|key\|token" app/ --include="*.php" | grep -v "// " | grep -v "/*" | grep -v "config(" | head -10; then
+            echo "⚠️ Mots-clés sensibles détectés - Vérifiez qu'aucun secret n'est en dur"
+            if [[ "${{ needs.detect-environment.outputs.environment }}" == "production" ]]; then
+              exit 1
+            fi
+          else
+            echo "✅ Aucun secret détecté"
+          fi
+
+      - name: 🔒 Check file permissions
+        run: |
+          echo "🔍 Vérification des permissions de fichiers..."
+          find . -name "*.env*" -type f -exec ls -la {} \; || true
+          find storage/ -type f -name "*.log" -exec ls -la {} \; | head -5 || true
+
+  performance:
+    name: ⚡ Tests de performance (${{ needs.detect-environment.outputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [detect-environment, detect-changes, setup]
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, imap
+
+      - name: 💾 Restore vendor cache
+        uses: actions/cache/restore@v4
+        with:
+          path: vendor
+          key: vendor-${{ github.sha }}-${{ needs.detect-environment.outputs.environment }}
+
+      - name: 📋 Copy environment file
+        run: echo '${{ secrets.GH_ENV }}' > .env
+
+      - name: 🔑 Generate application key
+        run: php artisan key:generate
+
+      - name: 🗃️ Run migrations
+        run: php artisan migrate --force
+
+      - name: ⚡ Run performance tests
+        run: |
+          if [[ "${{ needs.detect-environment.outputs.environment }}" == "production" ]]; then
+            # Tests de performance stricts pour production
+            ./vendor/bin/pest tests/Performance/ --group=performance --stop-on-failure
+          else
+            # Tests de performance normaux pour staging
+            ./vendor/bin/pest tests/Performance/ --group=performance
+          fi
+
+  quality:
+    name: 📊 Qualité du code (${{ needs.detect-environment.outputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [detect-environment, detect-changes, setup]
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v5
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, imap
+
+      - name: 💾 Restore vendor cache
+        uses: actions/cache/restore@v4
+        with:
+          path: vendor
+          key: vendor-${{ github.sha }}-${{ needs.detect-environment.outputs.environment }}
+
+      - name: 🎨 Check code style
+        run: |
+          if [[ "${{ needs.detect-environment.outputs.environment }}" == "production" ]]; then
+            ./vendor/bin/pint --test
+          else
+            ./vendor/bin/pint --test || echo "⚠️ Problèmes de style détectés (non bloquant en ${{ needs.detect-environment.outputs.environment }})"
+          fi
+
+      - name: 🔍 Static analysis
+        run: |
+          if [[ "${{ needs.detect-environment.outputs.environment }}" == "production" ]]; then
+            ./vendor/bin/phpstan analyse --no-progress --error-format=github
+          else
+            ./vendor/bin/phpstan analyse --no-progress || echo "⚠️ Problèmes PHPStan détectés (non bloquant en ${{ needs.detect-environment.outputs.environment }})"
+          fi
+
+      - name: 🔧 Check for refactoring opportunities
+        if: needs.detect-environment.outputs.environment != 'production'
+        run: ./vendor/bin/rector --dry-run || echo "💡 Opportunités de refactoring disponibles"
+
+  summary:
+    name: 📋 Résumé des tests
+    runs-on: ubuntu-latest
+    needs: [detect-environment, detect-changes, tests, security, performance, quality]
+    if: always() && needs.detect-changes.outputs.has-changes == 'true'
+    steps:
+      - name: 📋 Générer le résumé
+        run: |
+          echo "## 📊 Résumé CI/CD - ${{ needs.detect-environment.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 Environnement: ${{ needs.detect-environment.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏗️ Modules testés: ${{ needs.detect-changes.outputs.modules }}" >> $GITHUB_STEP_SUMMARY
+          echo "### 📅 Date: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 📊 Résultats:" >> $GITHUB_STEP_SUMMARY
+          echo "- 🧪 Tests: ${{ needs.tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔒 Sécurité: ${{ needs.security.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚡ Performance: ${{ needs.performance.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Qualité: ${{ needs.quality.result }}" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.detect-environment.outputs.deploy-ready }}" == "true" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🚀 Statut de déploiement: PRÊT" >> $GITHUB_STEP_SUMMARY
+          fi
