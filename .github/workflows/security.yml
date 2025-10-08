@@ -258,6 +258,7 @@ jobs:
       - name: 📦 Install Node.js dependencies
         run: |
           echo "📦 Installation des dépendances Node.js..."
+          npm install
           npm ci --prefer-offline --no-audit
           echo "✅ Dépendances Node.js installées"
 
