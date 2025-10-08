@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
 
 uses(RefreshDatabase::class);
 
@@ -24,5 +24,5 @@ test('requête utilisateurs est performante', function () {
     Log::info("Temps d'exécution de la requête User::all(): {$queryTime} secondes");
 
     // Vérifier que la requête s'exécute en moins de 0.5 seconde
-    expect($queryTime)->toBeLessThan(0.5, "La requête User::all() prend trop de temps");
+    expect($queryTime)->toBeLessThan(0.5, 'La requête User::all() prend trop de temps');
 });

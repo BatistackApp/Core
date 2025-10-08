@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
 
 uses(RefreshDatabase::class);
 
@@ -25,6 +25,6 @@ test('tableau de bord se charge rapidement', function () {
     Log::info("Temps de chargement du tableau de bord: {$loadTime} secondes");
 
     // Vérifier que la page se charge en moins de 1 seconde
-    expect($loadTime)->toBeLessThan(1.0, "Le tableau de bord prend trop de temps à charger");
+    expect($loadTime)->toBeLessThan(1.0, 'Le tableau de bord prend trop de temps à charger');
     $response->assertStatus(200);
 });

@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
 
 uses(RefreshDatabase::class);
 
