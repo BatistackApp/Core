@@ -279,5 +279,5 @@ Ce projet est en développement actif. Les contributions sont les bienvenues via
 - Documentation et tests (avec vérification automatique de la qualité)
 
 **Dernière mise à jour** : Aout 2025  
-**Version actuelle** : 1.13.0  
-**Prochaine version** : 1.14.0 (Octobre 2025)
+**Version actuelle** : 0.x.x
+**Prochaine version** : 1.0.0 (Octobre 2025)
