@@ -27,13 +27,16 @@ Schedule::call(function () {
 })->hourly();
 
 
-Schedule::call(function () {
+Schedule::call(function () use ($api) {
     Log::info("Backup: Vérification du statut de la licence");
     if(Service::all()->first()->status === ServiceStatus::OK) {
         Log::info("Backup: Service OK");
         if(Option::where('slug', 'sauvegarde-et-retentions')->exists()) {
             Log::info("Backup: Option sauvegarde-et-retentions existe");
             Artisan::call('backup:run', ['--only-db' => true]);
+            $api->post('/backup', [
+                'license_key' => Service::all()->first()->service_code,
+            ]);
         }
     }
 })  ->twiceDaily(5,21)
