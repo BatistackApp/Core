@@ -62,6 +62,14 @@ return [
             'report' => false,
         ],
 
+        'backups' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/backups'),
+            'url' => env('APP_URL').'/storage/backups',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ]
     ],
 
     /*

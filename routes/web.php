@@ -16,7 +16,7 @@ Route::view('dashboard', 'dashboard')
 Route::get('/test', function() {
     $api = new Batistack();
 
-    dd($api->get('/license/info', ['license_key' => 'SRV-20251011-YWAK1']));
+    dd($api->get('/license/info', ['license_key' => 'SRV-20251012-7V0TJ']));
 });  
 
 Route::middleware(['auth'])->group(function (): void {
