@@ -8,7 +8,7 @@
 [![Filament](https://img.shields.io/badge/Filament-4.0-F59E0B?style=for-the-badge&logo=filament&logoColor=white)](https://filamentphp.com)
 [![Tauri](https://img.shields.io/badge/Tauri-2.0-24C8DB?style=for-the-badge&logo=tauri&logoColor=white)](https://tauri.app)
 [![License](https://img.shields.io/github/license/vortechstudio/batistack2?style=for-the-badge)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/vortechstudio/batistack2?style=for-the-badge)](https://github.com/vortechstudio/batistack2/releases)
+[![Release](https://img.shields.io/github/v/release/BatistackApp/Core?style=for-the-badge)](https://github.com/BatistackApp/Core/releases)
 
 **Solution ERP tout-en-un** spécialement conçue pour les entreprises du BTP, avec modules intégrés pour une gestion complète de votre activité :
 
