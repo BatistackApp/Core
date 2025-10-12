@@ -7,6 +7,7 @@ use App\Models\Core\Option;
 use App\Models\Core\Service;
 use App\Services\Batistack;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class InstallApp extends Command
