@@ -17,8 +17,8 @@ return new class extends Migration
             $table->id();
             $table->string('service_code');
             $table->string('status')->default('ok');
-            $table->int('max_user')->default(0);
-            $table->int('storage_limit')->default(0);
+            $table->integer('max_user')->default(0);
+            $table->integer('storage_limit')->default(0);
             $table->timestamps();
         });
     }

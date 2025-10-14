@@ -77,8 +77,8 @@ final class InstallApp extends Command
             ['service_code' => $response['service_code']],
             [
                 'status' => $response['status'],
-                'max_user' => $response['product']['info_stripe']['metadata']['max_users'],
-                'max_storage' => $response['product']['info_stripe']['metadata']['storage_limit'],
+                'max_user' => $response['max_user'],
+                'storage_limit' => $response['storage_limit'],
             ]
         );
 
