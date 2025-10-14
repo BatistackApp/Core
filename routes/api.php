@@ -12,4 +12,5 @@ Route::get('/user', function (Request $request) {
 
 Route::prefix('core')->group(function () {
     Route::get('backup-restore', [CoreController::class, 'backupRestore']);
+    Route::get('/storage/info', [CoreController::class, 'storageInfo']);
 });
