@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums\Core;
 
 enum ServiceStatus: string
@@ -47,8 +49,8 @@ enum ServiceStatus: string
         };
     }
 
-    public function badge()
+    public function badge(): string
     {
-        return "<div class='badge badge-".$this->color()."'>".$this->label()."</div>";
+        return "<div class='badge badge-".$this->color()."'>".$this->label().'</div>';
     }
 }

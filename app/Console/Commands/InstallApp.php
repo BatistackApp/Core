@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
+use App\Jobs\Core\SyncOptionJob;
 use App\Models\Core\Module;
 use App\Models\Core\Option;
 use App\Models\Core\Service;
@@ -9,7 +12,7 @@ use App\Services\Batistack;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
-class InstallApp extends Command
+final class InstallApp extends Command
 {
     /**
      * The name and signature of the console command.
@@ -28,14 +31,15 @@ class InstallApp extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $license_key = $this->argument('license_key');
-        
+
         $this->verifKey($license_key);
         $this->installService($license_key);
         $this->installModules($license_key);
         $this->installOptions($license_key);
+
         return 0;
     }
 
@@ -47,7 +51,7 @@ class InstallApp extends Command
         $api = new Batistack();
         $response = $api->get('/license/info', ['license_key' => $license_key]);
 
-        if (!isset($response['id'])) {
+        if (! isset($response['id'])) {
             $this->error('License key invalide');
         }
 
@@ -62,7 +66,7 @@ class InstallApp extends Command
         $api = new Batistack();
         $response = $api->get('/license/info', ['license_key' => $license_key]);
 
-        if (!isset($response['id'])) {
+        if (! isset($response['id'])) {
             $this->error('Installation du service impossible');
         }
 
@@ -84,21 +88,21 @@ class InstallApp extends Command
         $api = new Batistack();
         $response = $api->get('/license/info', ['license_key' => $license_key]);
 
-        if (!isset($response['product']['features'])) {
+        if (! isset($response['product']['features'])) {
             $this->error('Installation des modules impossible');
         }
 
-        $this->info("Installation des modules");
+        $this->info('Installation des modules');
 
         foreach ($response['modules'] as $module) {
             $this->info("Installation du module : {$module['feature']['name']}");
 
             Module::updateOrCreate(
-                ['slug' => Str::replace("module-", "", $module['feature']['slug'])],
+                ['slug' => Str::replace('module-', '', (string) $module['feature']['slug'])],
                 [
-                'name' => $module['feature']['name'],
-                'is_active' => $module['is_active']
-            ]);
+                    'name' => $module['feature']['name'],
+                    'is_active' => $module['is_active'],
+                ]);
             // Lancement du seeder si disponible
         }
 
@@ -113,11 +117,11 @@ class InstallApp extends Command
         $api = new Batistack();
         $response = $api->get('/license/info', ['license_key' => $license_key]);
 
-        if (!isset($response['options'])) {
+        if (! isset($response['options'])) {
             $this->error('Installation des options impossible');
         }
 
-        $this->info("Installation des options");
+        $this->info('Installation des options');
 
         foreach ($response['options'] as $option) {
             $this->info("Installation de l'option : {$option['product']['name']}");
@@ -125,11 +129,14 @@ class InstallApp extends Command
             Option::updateOrCreate(
                 ['slug' => $option['product']['slug']],
                 [
-                    "name" => $option['product']['name'],
-                    "slug" => $option['product']['slug'],
-                    "settings" => $option['settings']
+                    'name' => $option['product']['name'],
+                    'slug' => $option['product']['slug'],
+                    'settings' => json_encode($option['settings']),
                 ]
             );
+
+            // Déclenche le job de synchronisation des options
+            dispatch(new SyncOptionJob($option['product']['slug'], $option['settings']));
         }
 
         $this->info('Installation des options réussie');
