@@ -10,6 +10,7 @@ use App\Models\Core\Option;
 use App\Models\Core\Service;
 use App\Services\Batistack;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 final class InstallApp extends Command
@@ -74,8 +75,14 @@ final class InstallApp extends Command
 
         Service::updateOrCreate(
             ['service_code' => $response['service_code']],
-            ['status' => $response['status']]
+            [
+                'status' => $response['status'],
+                'max_user' => $response['product']['info_stripe']['metadata']['max_users'],
+                'max_storage' => $response['product']['info_stripe']['metadata']['storage_limit'],
+            ]
         );
+
+        Storage::disk('public')->makeDirectory('upload');
 
         $this->info('Installation du service réussie');
     }
