@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Core;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Option extends Model
+final class Option extends Model
 {
     protected $guarded = [];
 
-    protected $casts = [
+    protected $cast = [
         'settings' => 'array',
     ];
 }

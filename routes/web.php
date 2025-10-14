@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Services\Batistack;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
-use App\Services\Batistack;
 
 Route::get('/', fn (): Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory => view('welcome'))->name('home');
 
@@ -13,11 +13,11 @@ Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::get('/test', function() {
+Route::get('/test', function () {
     $api = new Batistack();
 
-    dd($api->get('/license/info', ['license_key' => 'SRV-20251012-7V0TJ']));
-});  
+    dd($api->get('/license/info', ['license_key' => 'SRV-20251014-FNN6T']));
+});
 
 Route::middleware(['auth'])->group(function (): void {
     Route::redirect('settings', 'settings/profile');

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enum;
 
 trait EnumTrait
@@ -18,6 +20,7 @@ trait EnumTrait
     {
         return collect(self::cases())->mapWithKeys(function ($type) {
             $label = method_exists($type, 'label') ? $type->label() : $type->name;
+
             return [$type->value => $label];
         });
     }
