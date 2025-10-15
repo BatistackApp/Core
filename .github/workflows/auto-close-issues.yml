@@ -27,18 +27,16 @@ jobs:
           return pr.data.merged
 
     - name: Get Linked Issues
-      if: >
-        fromJson(steps.get-issues.outputs.result).length > 0
       id: get-issues
       uses: actions/github-script@v8
       with:
         script: |
-          const body = (context.payload.pull_request.body || '')
-          const issueNumbers = body.match(/#\d+/g) || []
-          return issueNumbers.map(num => num.slice(1))
+           const body = (context.payload.pull_request.body || '')
+           const issueNumbers = body.match(/#\d+/g) || []
+           return issueNumbers.map(num => num.slice(1))
 
     - name: Close Issues
-      if: steps.get-issues.outputs.result != '[]'
+      if: steps.get-issues.outputs.result != '[]' && steps.check-merge.outputs.result == 'true'
       uses: actions/github-script@v8
       env:
         DRY_RUN: false
