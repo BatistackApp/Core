@@ -2,9 +2,15 @@
 
 namespace App\Jobs\Core;
 
+use App\Enums\Core\ServiceStatus;
+use App\Models\Core\Option;
+use App\Models\Core\Service;
+use App\Services\Batistack;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 class SyncOptionJob implements ShouldQueue
 {
@@ -43,7 +49,22 @@ class SyncOptionJob implements ShouldQueue
      */
     private function syncSauvegardeRetentions(): void
     {
-        Artisan::call('backup:run --only-db');
+        $api = new Batistack();
+
+        try {
+            if (Service::first()->status === ServiceStatus::OK->value) {
+                Log::info('Backup: Service OK');
+                if (Option::where('slug', 'sauvegarde-et-retentions')->exists()) {
+                    Log::info('Backup: Option sauvegarde-et-retentions existe');
+                    Artisan::call('backup:run', ['--only-db' => true]);
+                    $api->post('/backup', [
+                        'license_key' => Service::first()->service_code,
+                    ]);
+                }
+            }            
+        }catch(Exception $e) {
+            Log::emergency('Backup: Erreur lors de la synchronisation de la sauvegarde et des retentions', ['exception' => $e]);
+        }
     }
 
     /**

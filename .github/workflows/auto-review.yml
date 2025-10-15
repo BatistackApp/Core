@@ -1,8 +1,8 @@
-name: Auto Review
+name: Auto Review Laravel
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
 
 permissions:
   pull-requests: write
@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Auto Review
+      - name: Auto Review Laravel
         uses: actions/github-script@v8
         with:
           script: |
@@ -24,16 +24,157 @@ jobs:
               pull_number: context.issue.number
             });
 
-            // Vérifications automatiques
-            const hasTests = files.some(f => f.filename.includes('test'));
-            const hasMigrations = files.some(f => f.filename.includes('migration'));
+            const reviewComments = [];
+            const warnings = [];
+            const suggestions = [];
 
-            if (!hasTests && files.length > 5) {
+            // 🔍 Analyses spécifiques
+            const analysis = analyzePR(files);
+            
+            // 📝 Construction du message de review
+            let reviewBody = '## 🤖 Auto Review - Laravel/Livewire/Filament\\n\\n';
+
+            if (analysis.hasLivewireChanges && !analysis.hasLivewireTests) {
+              warnings.push('**Livewire**: Composants modifiés sans tests correspondants');
+            }
+
+            if (analysis.hasFilamentChanges && !analysis.hasFilamentTests) {
+              warnings.push('**Filament**: Resources/Pages modifiées sans tests');
+            }
+
+            if (analysis.hasMigrations && !analysis.hasRollback) {
+              suggestions.push('Vérifiez que la migration peut être rollback sans erreurs');
+            }
+
+            if (analysis.hasModelChanges && !analysis.hasFactoryUpdates) {
+              suggestions.push('Pensez à mettre à jour les factories des modèles modifiés');
+            }
+
+            if (analysis.largePR) {
+              warnings.push(`PR volumineuse (${analysis.fileCount} fichiers) - Envisagez de la découper`);
+            }
+
+            if (analysis.hasEnvExampleUpdates) {
+              suggestions.push('N\'oubliez pas de mettre à jour la documentation des variables d\'environnement');
+            }
+
+            // 🎯 Ajout des sections au review
+            if (warnings.length > 0) {
+              reviewBody += '### ⚠️ Points de Vigilance\\n';
+              warnings.forEach(warning => reviewBody += `- ${warning}\\n`);
+              reviewBody += '\\n';
+            }
+
+            if (suggestions.length > 0) {
+              reviewBody += '### 💡 Suggestions\\n';
+              suggestions.forEach(suggestion => reviewBody += `- ${suggestion}\\n`);
+              reviewBody += '\\n';
+            }
+
+            if (analysis.positiveAspects.length > 0) {
+              reviewBody += '### ✅ Points Positifs\\n';
+              analysis.positiveAspects.forEach(point => reviewBody += `- ${point}\\n`);
+            }
+
+            // 🚨 Déterminer le statut de la review
+            let event = 'COMMENT';
+            if (warnings.length > 2 || analysis.criticalIssues.length > 0) {
+              event = 'REQUEST_CHANGES';
+            } else if (warnings.length === 0 && suggestions.length === 0) {
+              reviewBody += '\\n🎉 Aucun problème détecté automatiquement!';
+            }
+
+            // 📤 Poster la review
+            if (reviewBody.length > 0) {
               await github.rest.pulls.createReview({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: context.issue.number,
-                body: '⚠️ Cette PR semble importante mais ne contient pas de tests.',
-                event: 'REQUEST_CHANGES'
+                body: reviewBody,
+                event: event
               });
+            }
+
+            // 🔍 Fonction d'analyse
+            function analyzePR(files) {
+              const result = {
+                fileCount: files.length,
+                hasLivewireChanges: false,
+                hasLivewireTests: false,
+                hasFilamentChanges: false,
+                hasFilamentTests: false,
+                hasMigrations: false,
+                hasRollback: false,
+                hasModelChanges: false,
+                hasFactoryUpdates: false,
+                hasEnvExampleUpdates: false,
+                largePR: files.length > 10,
+                positiveAspects: [],
+                criticalIssues: []
+              };
+
+              files.forEach(file => {
+                const filename = file.filename;
+                const status = file.status;
+
+                // Livewire
+                if (filename.includes('app/Livewire/')) {
+                  result.hasLivewireChanges = true;
+                  if (filename.includes('Test.php')) {
+                    result.hasLivewireTests = true;
+                  }
+                }
+
+                // Filament
+                if (filename.includes('app/Filament/')) {
+                  result.hasFilamentChanges = true;
+                  if (filename.includes('Test.php')) {
+                    result.hasFilamentTests = true;
+                  }
+                }
+
+                // Migrations
+                if (filename.includes('migrations/')) {
+                  result.hasMigrations = true;
+                  if (filename.includes('down')) {
+                    result.hasRollback = true;
+                  }
+                }
+
+                // Models
+                if (filename.includes('app/Models/')) {
+                  result.hasModelChanges = true;
+                }
+
+                // Factories
+                if (filename.includes('database/factories/')) {
+                  result.hasFactoryUpdates = true;
+                }
+
+                // Environment
+                if (filename.includes('.env.example')) {
+                  result.hasEnvExampleUpdates = true;
+                }
+
+                // Tests généraux
+                if (filename.includes('tests/') && filename.includes('Test.php')) {
+                  result.positiveAspects.push('Tests inclus - Excellent!');
+                }
+
+                // Vérifications de sécurité
+                if (filename.includes('config/') && status !== 'modified') {
+                  result.criticalIssues.push('Modification de fichier de configuration détectée');
+                }
+              });
+
+              // Logique supplémentaire
+              if (result.hasLivewireChanges && result.hasLivewireTests) {
+                result.positiveAspects.push('Tests Livewire inclus - Parfait!');
+              }
+
+              if (result.hasFilamentChanges && result.hasFilamentTests) {
+                result.positiveAspects.push('Tests Filament inclus - Excellent!');
+              }
+
+              return result;
             }

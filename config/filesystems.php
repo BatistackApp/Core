@@ -70,6 +70,16 @@ return [
             'throw' => false,
             'report' => false,
         ],
+
+
+        'upload' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/upload'),
+            'url' => env('APP_URL').'/storage/upload',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
     ],
 
     /*
