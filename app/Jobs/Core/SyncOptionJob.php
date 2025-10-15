@@ -35,6 +35,7 @@ final class SyncOptionJob implements ShouldQueue
             'pack-signature' => $this->syncPackSignature(),
             'sauvegarde-et-retentions' => $this->syncSauvegardeRetentions(),
             'extension-stockages' => $this->syncExtensionStockages(),
+            default => null
         };
     }
 

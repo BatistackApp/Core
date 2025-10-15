@@ -20,3 +20,4 @@ parameters:
         - identifier: match.alwaysTrue  
         - identifier: missingType.iterableValue
         - identifier: property.notFound
+        - identifier: property.onlyWritten
