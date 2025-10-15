@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs\Core;
 
 use App\Enums\Core\ServiceStatus;
@@ -12,14 +14,14 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 
-class SyncOptionJob implements ShouldQueue
+final class SyncOptionJob implements ShouldQueue
 {
     use Queueable;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(public string $slugOption, public array $settings)
+    public function __construct(public string $slugOption, public array $settings = [])
     {
         //
     }
@@ -52,17 +54,17 @@ class SyncOptionJob implements ShouldQueue
         $api = new Batistack();
 
         try {
-            if (Service::first()->status === ServiceStatus::OK->value) {
+            if (\App\Models\Core\Service::query()->first()->status === ServiceStatus::OK->value) {
                 Log::info('Backup: Service OK');
-                if (Option::where('slug', 'sauvegarde-et-retentions')->exists()) {
+                if (\App\Models\Core\Option::query()->where('slug', 'sauvegarde-et-retentions')->exists()) {
                     Log::info('Backup: Option sauvegarde-et-retentions existe');
                     Artisan::call('backup:run', ['--only-db' => true]);
                     $api->post('/backup', [
-                        'license_key' => Service::first()->service_code,
+                        'license_key' => \App\Models\Core\Service::query()->first()->service_code,
                     ]);
                 }
-            }            
-        }catch(Exception $e) {
+            }
+        } catch (Exception $e) {
             Log::emergency('Backup: Erreur lors de la synchronisation de la sauvegarde et des retentions', ['exception' => $e]);
         }
     }

@@ -71,7 +71,6 @@ return [
             'report' => false,
         ],
 
-
         'upload' => [
             'driver' => 'local',
             'root' => storage_path('app/public/upload'),

@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Services\Batistack;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Mockery;
 use Tests\TestCase;
 
 // Utiliser TestCase pour activer les façades Laravel
@@ -28,16 +29,16 @@ test('get method returns json response', function () use ($testEndpoint) {
     $testUrl = '/test-endpoint';
     $testData = ['param' => 'value'];
     $expectedResponse = ['status' => 'success', 'data' => ['key' => 'value']];
-    
+
     // Mock HTTP facade
     Http::fake([
         "{$testEndpoint}{$testUrl}*" => Http::response($expectedResponse, 200),
     ]);
-    
+
     // Act
     $batistack = new Batistack();
     $result = $batistack->get($testUrl, $testData);
-    
+
     // Assert
     expect($result)->toBe($expectedResponse);
 });
@@ -46,23 +47,23 @@ test('get method returns json response', function () use ($testEndpoint) {
 test('get method returns null on exception', function () {
     // Arrange
     $testUrl = '/test-endpoint';
-    
+
     // Mock HTTP facade to throw exception
     Http::fake(function () {
-        throw new \Exception('Test exception');
+        throw new Exception('Test exception');
     });
-    
+
     // Mock Log facade
     Log::shouldReceive('error')
         ->once()
         ->withArgs(function ($message) {
             return $message === 'Batistack get error: Test exception';
         });
-    
+
     // Act
     $batistack = new Batistack();
     $result = $batistack->get($testUrl);
-    
+
     // Assert
     expect($result)->toBeNull();
 });
@@ -73,16 +74,16 @@ test('post method returns json response', function () use ($testEndpoint) {
     $testUrl = '/test-endpoint';
     $testData = ['param' => 'value'];
     $expectedResponse = ['status' => 'success', 'data' => ['key' => 'value']];
-    
+
     // Mock HTTP facade
     Http::fake([
         "{$testEndpoint}{$testUrl}" => Http::response($expectedResponse, 200),
     ]);
-    
+
     // Act
     $batistack = new Batistack();
     $result = $batistack->post($testUrl, $testData);
-    
+
     // Assert
     expect($result)->toBe($expectedResponse);
 });
@@ -91,23 +92,23 @@ test('post method returns json response', function () use ($testEndpoint) {
 test('post method returns null on exception', function () {
     // Arrange
     $testUrl = '/test-endpoint';
-    
+
     // Mock HTTP facade to throw exception
     Http::fake(function () {
-        throw new \Exception('Test exception');
+        throw new Exception('Test exception');
     });
-    
+
     // Mock Log facade
     Log::shouldReceive('error')
         ->once()
         ->withArgs(function ($message) {
             return $message === 'Batistack post error: Test exception';
         });
-    
+
     // Act
     $batistack = new Batistack();
     $result = $batistack->post($testUrl);
-    
+
     // Assert
     expect($result)->toBeNull();
 });

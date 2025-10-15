@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 
 final class Module extends Model
 {
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
     protected $guarded = [];
 
-    protected ?array $cast = [
+    private ?array $cast = [
         'is_active' => 'boolean',
     ];
 }

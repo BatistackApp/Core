@@ -73,14 +73,11 @@ final class InstallApp extends Command
 
         info("Installation du service : {$response['id']}");
 
-        Service::updateOrCreate(
-            ['service_code' => $response['service_code']],
-            [
-                'status' => $response['status'],
-                'max_user' => $response['max_user'],
-                'storage_limit' => $response['storage_limit'],
-            ]
-        );
+        \App\Models\Core\Service::query()->updateOrCreate(['service_code' => $response['service_code']], [
+            'status' => $response['status'],
+            'max_user' => $response['max_user'],
+            'storage_limit' => $response['storage_limit'],
+        ]);
 
         Storage::disk('public')->makeDirectory('upload');
 
@@ -104,12 +101,10 @@ final class InstallApp extends Command
         foreach ($response['modules'] as $module) {
             $this->info("Installation du module : {$module['feature']['name']}");
 
-            Module::updateOrCreate(
-                ['slug' => Str::replace('module-', '', (string) $module['feature']['slug'])],
-                [
-                    'name' => $module['feature']['name'],
-                    'is_active' => $module['is_active'],
-                ]);
+            \App\Models\Core\Module::query()->updateOrCreate(['slug' => Str::replace('module-', '', (string) $module['feature']['slug'])], [
+                'name' => $module['feature']['name'],
+                'is_active' => $module['is_active'],
+            ]);
             // Lancement du seeder si disponible
         }
 
@@ -133,14 +128,11 @@ final class InstallApp extends Command
         foreach ($response['options'] as $option) {
             $this->info("Installation de l'option : {$option['product']['name']}");
 
-            Option::updateOrCreate(
-                ['slug' => $option['product']['slug']],
-                [
-                    'name' => $option['product']['name'],
-                    'slug' => $option['product']['slug'],
-                    'settings' => json_encode($option['settings']),
-                ]
-            );
+            \App\Models\Core\Option::query()->updateOrCreate(['slug' => $option['product']['slug']], [
+                'name' => $option['product']['name'],
+                'slug' => $option['product']['slug'],
+                'settings' => json_encode($option['settings']),
+            ]);
 
             // Déclenche le job de synchronisation des options
             dispatch(new SyncOptionJob($option['product']['slug'], $option['settings']));

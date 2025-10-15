@@ -8,9 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 
 final class Option extends Model
 {
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
     protected $guarded = [];
 
-    protected $cast = [
+    private array $cast = [
         'settings' => 'array',
     ];
 }
