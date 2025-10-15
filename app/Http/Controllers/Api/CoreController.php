@@ -22,19 +22,16 @@ final class CoreController extends Controller
 
         if ($output === 0) {
             Artisan::call('up');
-            User::all()->each(function (User $user) {
+            User::all()->each(function (User $user): void {
                 $user->notify(new BackupRestoreSuccessful());
             });
+
             return response()->json([
                 'message' => 'Restauration effectuée avec succès',
             ]);
-        } else {
-            return response()->json($output);
         }
 
-        return response()->json([
-            'message' => 'Erreur lors de la restauration',
-        ], 500);
+        return response()->json($output);
 
     }
 
@@ -43,15 +40,15 @@ final class CoreController extends Controller
         $license = collect();
 
         $storageBase = 0;
-        $storageBaseMax = Service::first()->storage_limit * 1024 * 1024 * 1024;
+        $storageBaseMax = \App\Models\Core\Service::query()->first()->storage_limit * 1024 * 1024 * 1024;
         foreach (Storage::disk('public')->allFiles('upload') as $file) {
             $storageBase += Storage::disk('public')->size($file);
         }
 
         $license->push([
             'storage_used' => $storageBase,
-            'storage_used_gb' => round($storageBase / (1024*1024*1024), 2),
-            'storage_used_mb' => round($storageBase / (1024*1024), 2),
+            'storage_used_gb' => round($storageBase / (1024 * 1024 * 1024), 2),
+            'storage_used_mb' => round($storageBase / (1024 * 1024), 2),
             'storage_used_percentage' => round(($storageBase / $storageBaseMax) * 100, 2),
         ]);
 

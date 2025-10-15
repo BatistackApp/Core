@@ -17,23 +17,23 @@ Artisan::command('inspire', function (): void {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::call(function () {
+Schedule::call(function (): void {
     Log::info('Mise à jour du statut de la licence');
-    $license = Service::first()->service_code;
-    Service::where('service_code', $license)->update([
+    $license = \App\Models\Core\Service::query()->first()->service_code;
+    \App\Models\Core\Service::query()->where('service_code', $license)->update([
         'status' => app(Batistack::class)->get('/license/info', ['license_key' => $license])['status'],
     ]);
 })->hourly();
 
-Schedule::call(function () use ($api) {
+Schedule::call(function () use ($api): void {
     Log::info('Backup: Vérification du statut de la licence');
-    if (Service::first()->status === ServiceStatus::OK->value) {
+    if (\App\Models\Core\Service::query()->first()->status === ServiceStatus::OK->value) {
         Log::info('Backup: Service OK');
-        if (Option::where('slug', 'sauvegarde-et-retentions')->exists()) {
+        if (\App\Models\Core\Option::query()->where('slug', 'sauvegarde-et-retentions')->exists()) {
             Log::info('Backup: Option sauvegarde-et-retentions existe');
             Artisan::call('backup:run', ['--only-db' => true]);
             $api->post('/backup', [
-                'license_key' => Service::first()->service_code,
+                'license_key' => \App\Models\Core\Service::query()->first()->service_code,
             ]);
         }
     }

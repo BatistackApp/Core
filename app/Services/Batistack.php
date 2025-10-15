@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-final class Batistack
+final readonly class Batistack
 {
     private string $endpoint;
 

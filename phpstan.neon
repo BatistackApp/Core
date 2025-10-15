@@ -17,3 +17,7 @@ parameters:
           identifier: method.nonObject
         -
           identifier: return.unusedType
+        - identifier: match.alwaysTrue  
+        - identifier: missingType.iterableValue
+        - identifier: property.notFound
+        - identifier: property.onlyWritten

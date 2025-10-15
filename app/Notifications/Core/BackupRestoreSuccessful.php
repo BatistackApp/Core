@@ -1,13 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\Core;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class BackupRestoreSuccessful extends Notification
+final class BackupRestoreSuccessful extends Notification
 {
     use Queueable;
 
@@ -35,9 +36,9 @@ class BackupRestoreSuccessful extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("Restauration de sauvegarde effectuée avec succès")
+            ->subject('Restauration de sauvegarde effectuée avec succès')
             ->greeting("Bonjour {$notifiable->name},")
-            ->line("La restauration de sauvegarde a été effectuée avec succès.")
+            ->line('La restauration de sauvegarde a été effectuée avec succès.')
             ->line("Merci d'avoir utilisé notre application!");
     }
 

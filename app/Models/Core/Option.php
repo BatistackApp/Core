@@ -10,7 +10,7 @@ final class Option extends Model
 {
     protected $guarded = [];
 
-    protected $cast = [
+    private array $cast = [
         'settings' => 'array',
     ];
 }

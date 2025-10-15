@@ -13,7 +13,7 @@ Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::get('/test', function () {
+Route::get('/test', function (): void {
     $api = new Batistack();
 
     dd($api->get('/license/info', ['license_key' => 'SRV-20251014-FNN6T']));

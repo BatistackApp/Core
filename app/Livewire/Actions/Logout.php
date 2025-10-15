@@ -21,6 +21,6 @@ final class Logout
         Session::invalidate();
         Session::regenerateToken();
 
-        return redirect()->route('home');
+        return to_route('home');
     }
 }

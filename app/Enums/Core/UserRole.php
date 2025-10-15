@@ -11,7 +11,7 @@ enum UserRole: string
     case FOURNISSEUR = 'fournisseur';
     case SALARIE = 'salarie';
     case COMPTABILITE = 'comptabilite';
-    case COUNTERMASTER = 'Chef de Chantier';
+    // case COUNTERMASTER = 'Chef de Chantier';
 
     public function label(): string
     {
@@ -21,7 +21,7 @@ enum UserRole: string
             self::FOURNISSEUR => 'Fournisseur',
             self::SALARIE => 'Salarié',
             self::COMPTABILITE => 'Comptabilite',
-            self::COUNTERMASTER => 'Chef de Chantier',
+            // self::COUNTERMASTER => 'Chef de Chantier',
         };
     }
 
@@ -33,7 +33,7 @@ enum UserRole: string
             self::FOURNISSEUR => 'warning',
             self::SALARIE => 'info',
             self::COMPTABILITE => 'primary',
-            self::COUNTERMASTER => 'secondary',
+            // self::COUNTERMASTER => 'secondary',
             default => 'gray',
         };
     }

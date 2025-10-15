@@ -11,7 +11,7 @@ final class Service extends Model
 {
     protected $guarded = [];
 
-    protected ?array $cast = [
+    private array $cast = [
         'status' => ServiceStatus::class,
     ];
 }

@@ -10,7 +10,7 @@ final class Module extends Model
 {
     protected $guarded = [];
 
-    protected ?array $cast = [
+    private array $cast = [
         'is_active' => 'boolean',
     ];
 }
