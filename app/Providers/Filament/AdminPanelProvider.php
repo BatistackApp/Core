@@ -58,7 +58,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 HeaderSelectPlugin::make()
-                    ->rounded('rounded-lg')
+                    ->rounded('rounded-sm')
                     ->selects($this->defineModuleForHeaderSelect()),
             ]);
     }
