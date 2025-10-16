@@ -20,6 +20,7 @@
         "nunomaduro/essentials": "^1.0",
         "opcodesio/log-viewer": "^3.19",
         "predis/predis": "^3.2",
+        "rap2hpoutre/fast-excel": "^5.6",
         "rawilk/laravel-settings": "^3.4",
         "solution-forest/filament-header-select": "^0.0.1",
         "spatie/laravel-backup": "^9.3",

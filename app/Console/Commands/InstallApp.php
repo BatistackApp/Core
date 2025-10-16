@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Jobs\Core\SyncOptionJob;
+use App\Models\Comptabilite\PlanComptable;
+use App\Models\Core\Country;
 use App\Models\Core\Module;
 use App\Models\Core\Option;
 use App\Models\Core\Service;
 use App\Services\Batistack;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Rap2hpoutre\FastExcel\FastExcel;
 
 final class InstallApp extends Command
 {
@@ -40,7 +44,9 @@ final class InstallApp extends Command
         $this->installService($license_key);
         $this->installModules($license_key);
         $this->installOptions($license_key);
-        $this->installCities();
+        //$this->installCities();
+        //$this->installCountries();
+        $this->installPcg();
 
         return 0;
     }
@@ -183,5 +189,57 @@ final class InstallApp extends Command
         }
 
         $this->info('Installation des villes réussie');
+    }
+
+    /**
+     * Installation des pays.
+     */
+    private function installCountries(): void
+    {
+        if (Country::count() === 0) {
+            $this->info('Installation des informations des pays');
+
+            $countries = Http::withoutVerifying()
+                ->get('https://gist.githubusercontent.com/revolunet/6173043/raw/222c4537affb1bdecbabcec51143742709aa0b6e/countries-FR.json')
+                ->json();
+
+            $bar = $this->output->createProgressBar(count($countries));
+            $bar->start();
+
+            foreach ($countries as $country) {
+                Country::create([
+                    'name' => $country,
+                ]);
+                $bar->advance();
+            }
+            $bar->finish();
+        }
+    }
+
+    /**
+     * Installation des plans comptables.
+     */
+    private function installPcg(): void
+    {
+        $collects = (new FastExcel)->import(base_path('database/json/pcg.xlsx'));
+        if (PlanComptable::count() === 0) {
+            $this->info('Installation du plan comptable général');
+            $bar = $this->output->createProgressBar($collects->count());
+            $bar->start();
+
+            foreach ($collects as $account) {
+                PlanComptable::create([
+                    'code' => $account['Code'],
+                    'account' => $account['account'],
+                    'type' => $account['type'],
+                    'lettrage' => $account['lettrage'] === true,
+                    'principal' => $account['principal'],
+                    'initial' => (float) $account['initial'],
+                ]);
+                $bar->advance();
+            }
+
+            $bar->finish();
+        }
     }
 }
