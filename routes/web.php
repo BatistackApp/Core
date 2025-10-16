@@ -9,9 +9,7 @@ use Livewire\Volt\Volt;
 
 Route::get('/', fn (): Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory => view('welcome'))->name('home');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+
 
 Route::get('/test', function (): void {
     $api = new Batistack();

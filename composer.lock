@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "701b9b3b95cce5ea99c13a0ff7bd55c9",
+    "content-hash": "d6d987e0292d0df2f22c43f60f0d4645",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -5950,6 +5950,86 @@
             "time": "2025-09-04T20:59:21+00:00"
         },
         {
+            "name": "rawilk/laravel-settings",
+            "version": "v3.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/rawilk/laravel-settings.git",
+                "reference": "94738ac331612f1cf0dfae2ce4f4ff212cd89eb4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/rawilk/laravel-settings/zipball/94738ac331612f1cf0dfae2ce4f4ff212cd89eb4",
+                "reference": "94738ac331612f1cf0dfae2ce4f4ff212cd89eb4",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "^10.0|^11.0|^12.0",
+                "illuminate/support": "^10.0|^11.0|^12.0",
+                "php": "^8.1",
+                "spatie/laravel-package-tools": "^1.13"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.2",
+                "orchestra/testbench": "^8.0|^9.0|^10.0",
+                "pestphp/pest": "^2.10|^3.0",
+                "pestphp/pest-plugin-laravel": "^2.2|^3.0",
+                "spatie/laravel-ray": "^1.31"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Settings": "Rawilk\\Settings\\Facades\\Settings",
+                        "SettingsFactory": "Rawilk\\Settings\\Drivers\\Factory"
+                    },
+                    "providers": [
+                        "Rawilk\\Settings\\SettingsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "Rawilk\\Settings\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Randall Wilk",
+                    "email": "randall@randallwilk.dev",
+                    "homepage": "https://randallwilk.dev",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Store Laravel application settings in the database.",
+            "homepage": "https://github.com/rawilk/laravel-settings",
+            "keywords": [
+                "Settings",
+                "database settings",
+                "eloquent model settings",
+                "laravel-settings",
+                "rawilk"
+            ],
+            "support": {
+                "issues": "https://github.com/rawilk/laravel-settings/issues",
+                "source": "https://github.com/rawilk/laravel-settings/tree/v3.4.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/rawilk",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-02-25T20:23:16+00:00"
+        },
+        {
             "name": "ryangjchandler/blade-capture-directive",
             "version": "v1.1.0",
             "source": {
@@ -6104,6 +6184,61 @@
                 }
             ],
             "time": "2022-12-17T21:53:22+00:00"
+        },
+        {
+            "name": "solution-forest/filament-header-select",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/solutionforest/filament-header-select.git",
+                "reference": "200806f8ee061d9d0e155a8b142ef11069157dfb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/solutionforest/filament-header-select/zipball/200806f8ee061d9d0e155a8b142ef11069157dfb",
+                "reference": "200806f8ee061d9d0e155a8b142ef11069157dfb",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^3.0|^4.0",
+                "illuminate/contracts": "^10.0|^11.0|^12.0",
+                "livewire/livewire": "^3.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.24",
+                "orchestra/testbench": "^8.0|^9.0",
+                "pestphp/pest": "^3.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "SolutionForest\\FilamentHeaderSelect\\HeaderSelectServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "SolutionForest\\FilamentHeaderSelect\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Solution Forest",
+                    "email": "hello@solutionforest.com"
+                }
+            ],
+            "description": "A simple, powerful header select component for Filament admin panels",
+            "support": {
+                "issues": "https://github.com/solutionforest/filament-header-select/issues",
+                "source": "https://github.com/solutionforest/filament-header-select/tree/v0.0.1"
+            },
+            "time": "2025-09-04T15:47:09+00:00"
         },
         {
             "name": "spatie/db-dumper",
