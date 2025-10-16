@@ -40,6 +40,7 @@ final class InstallApp extends Command
         $this->installService($license_key);
         $this->installModules($license_key);
         $this->installOptions($license_key);
+        $this->installCities();
 
         return 0;
     }
@@ -139,5 +140,48 @@ final class InstallApp extends Command
         }
 
         $this->info('Installation des options réussie');
+    }
+
+    /**
+     * Installation des villes.
+     */
+    private function installCities(): void
+    {
+        $this->info('Installation des villes');
+
+        $cities = \App\Models\Core\City::query()->get();
+
+        if ($cities->count() > 0) {
+            $this->info('Villes déjà installées');
+
+            return;
+        }
+
+        $this->info('Installation des villes');
+
+        $cities = json_decode(file_get_contents(__DIR__.'/../../../../database/json/cities.json'), true);
+
+        $chunks = array_chunk($cities, 500);
+        $totalChunks = count($chunks);
+        $this->info('Nombre de tranches : '.$totalChunks);
+
+        foreach ($chunks as $i => $chunk) {
+            $this->info('Traitement de la tranche '.($i + 1)."/{$totalChunks}");
+            $bar = $this->output->createProgressBar(count($chunk));
+
+            foreach ($chunk as $city) {
+                $latLong = explode(',', (string) $city['coordonnees_gps']);
+                \App\Models\Core\City::query()->updateOrCreate(['postal_code' => $city['postal_code']], [
+                    'city' => $city['Nom_commune'],
+                    'postal_code' => $city['Code_postal'],
+                    'latitude' => $latLong[0] ?? '',
+                    'longitude' => $latLong[1] ?? '',
+                ]);
+                $bar->advance();
+            }
+            $bar->finish();
+        }
+
+        $this->info('Installation des villes réussie');
     }
 }
