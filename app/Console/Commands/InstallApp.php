@@ -159,7 +159,7 @@ final class InstallApp extends Command
 
         $this->info('Installation des villes');
 
-        $cities = json_decode(file_get_contents(__DIR__.'/../../../../database/json/cities.json'), true);
+        $cities = json_decode(file_get_contents(base_path('database/json/cities.json')), true);
 
         $chunks = array_chunk($cities, 500);
         $totalChunks = count($chunks);
@@ -171,7 +171,7 @@ final class InstallApp extends Command
 
             foreach ($chunk as $city) {
                 $latLong = explode(',', (string) $city['coordonnees_gps']);
-                \App\Models\Core\City::query()->updateOrCreate(['postal_code' => $city['postal_code']], [
+                \App\Models\Core\City::query()->updateOrCreate(['postal_code' => $city['Code_postal']], [
                     'city' => $city['Nom_commune'],
                     'postal_code' => $city['Code_postal'],
                     'latitude' => $latLong[0] ?? '',
