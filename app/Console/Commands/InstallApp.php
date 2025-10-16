@@ -6,13 +6,18 @@ namespace App\Console\Commands;
 
 use App\Jobs\Core\SyncOptionJob;
 use App\Models\Comptabilite\PlanComptable;
+use App\Models\Core\Bank;
+use App\Models\Core\Company;
 use App\Models\Core\Country;
 use App\Models\Core\Module;
 use App\Models\Core\Option;
 use App\Models\Core\Service;
 use App\Services\Batistack;
+use App\Services\Bridge;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Rap2hpoutre\FastExcel\FastExcel;
@@ -41,12 +46,13 @@ final class InstallApp extends Command
         $license_key = $this->argument('license_key');
 
         $this->verifKey($license_key);
-        $this->installService($license_key);
-        $this->installModules($license_key);
-        $this->installOptions($license_key);
+        //$this->installService($license_key);
+        //$this->installModules($license_key);
+        //$this->installOptions($license_key);
         //$this->installCities();
         //$this->installCountries();
-        $this->installPcg();
+        //$this->installPcg();
+        $this->defineCompanyInfo($license_key);
 
         return 0;
     }
@@ -242,4 +248,83 @@ final class InstallApp extends Command
             $bar->finish();
         }
     }
+
+    private function defineCompanyInfo(string $license_key)
+    {
+        $api = new Batistack();
+        $response = $api->get('/license/info', ['license_key' => $license_key]);
+
+        if (! isset($response['customer'])) {
+            $this->error('Installation des informations de la société impossible');
+        }
+
+        // Vérifier si l'option 'aggregation-bancaire' est présente
+        $hasBankAggregation = false;
+        $bridge_client_id = null;
+        if (isset($response['options']) && is_array($response['options'])) {
+            foreach ($response['options'] as $option) {
+                if (isset($option['product']['slug']) && $option['product']['slug'] === 'aggregation-bancaire') {
+                    $hasBankAggregation = true;
+                    $this->importBank();
+                    break;
+                }
+            }
+        }
+
+        if($hasBankAggregation) {
+            // Link Vers Bridge Api
+        }
+
+        Company::query()->create([
+            'name' => $response['customer']['entreprise'],
+            'address' => $response['customer']['adresse'],
+            'code_postal' => $response['customer']['code_postal'],
+            'ville' => $response['customer']['ville'],
+            'pays' => $response['customer']['pays'],
+            'phone' => $response['customer']['tel'],
+            'email' => $response['customer']['user']['email'],
+            'bridge_client_id' => $bridge_client_id,
+        ]);
+    }
+
+    private function importBank()
+    {
+        if (Bank::count() !== 0) {
+            $bridge = new Bridge();
+            $this->info('Installation des banques française');
+
+            try {
+                $call = $bridge->get('/providers?limit=500&country_code=FR')['resources'];
+                $progress = $this->output->createProgressBar(count($call));
+                $progress->start();
+
+                foreach ($call as $bank) {
+                    Bank::create([
+                        'bridge_id' => $bank['id'],
+                        'name' => $bank['name'],
+                        'logo_bank' => $bank['images']['logo'],
+                        'status_aggegation' => isset($bank['health_status']['aggregation']['status']) ? $bank['health_status']['aggregation']['status'] : null,
+                        'status_payment' => isset($bank['health_status']['single_payment']['status']) ? $bank['health_status']['single_payment']['status'] : null,
+                    ]);
+                    $progress->advance();
+                }
+
+                $progress->finish();
+            } catch(Exception $exception) {
+                Log::error($exception);
+                $this->error("Erreur lors de l'importation des banques, Base primaire insérer");
+                if (app()->environment('local', 'testing')) {
+                    $this->info("Importation des banques en mode local ou de test, banque de test insérée");
+                    Bank::create([
+                        'bridge_id' => 1,
+                        'name' => "Banque de Test",
+                        "logo_bank" => 'https://bank.test',
+                        "status_aggegation" => "healthy",
+                        "status_payment" => "healthy",
+                    ]);
+                }
+            }
+        }
+    }
+    
 }
