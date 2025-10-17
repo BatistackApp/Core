@@ -8,6 +8,7 @@ use App\Jobs\Core\SyncOptionJob;
 use App\Models\Comptabilite\PlanComptable;
 use App\Models\Core\Bank;
 use App\Models\Core\Company;
+use App\Models\Core\ConditionReglement;
 use App\Models\Core\Country;
 use App\Models\Core\Module;
 use App\Models\Core\Option;
@@ -46,13 +47,14 @@ final class InstallApp extends Command
         $license_key = $this->argument('license_key');
 
         $this->verifKey($license_key);
-        //$this->installService($license_key);
-        //$this->installModules($license_key);
-        //$this->installOptions($license_key);
-        //$this->installCities();
-        //$this->installCountries();
-        //$this->installPcg();
+        $this->installService($license_key);
+        $this->installModules($license_key);
+        $this->installOptions($license_key);
+        $this->installCities();
+        $this->installCountries();
+        $this->installPcg();
         $this->defineCompanyInfo($license_key);
+        $this->installConditionReglement();
 
         return 0;
     }
@@ -326,5 +328,34 @@ final class InstallApp extends Command
             }
         }
     }
-    
+
+    /**
+     * Installation des conditions de réglement.
+     */
+    private function installConditionReglement(): void
+    {
+        if (ConditionReglement::count() === 0) {
+            ConditionReglement::create([
+                'code' => 'RECEP',
+                'name' => 'A Réception',
+                'name_document' => 'A Réception',
+                'nb_jours' => 1,
+                'fdm' => false,
+            ]);
+            ConditionReglement::create([
+                'code' => '30D',
+                'name' => '30 Jours',
+                'name_document' => 'Réglement à 30 jours',
+                'nb_jours' => 30,
+                'fdm' => false,
+            ]);
+            ConditionReglement::create([
+                'code' => '30DMONTH',
+                'name' => '30 Jours fin de mois',
+                'name_document' => 'Réglement à 30 jours fin de mois',
+                'nb_jours' => 30,
+                'fdm' => true,
+            ]);
+        }
+    }
 }
