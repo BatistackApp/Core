@@ -10,6 +10,7 @@ use App\Models\Core\Bank;
 use App\Models\Core\Company;
 use App\Models\Core\ConditionReglement;
 use App\Models\Core\Country;
+use App\Models\Core\ModeReglement;
 use App\Models\Core\Module;
 use App\Models\Core\Option;
 use App\Models\Core\Service;
@@ -55,6 +56,7 @@ final class InstallApp extends Command
         $this->installPcg();
         $this->defineCompanyInfo($license_key);
         $this->installConditionReglement();
+        $this->installModeReglement();
 
         return 0;
     }
@@ -355,6 +357,45 @@ final class InstallApp extends Command
                 'name_document' => 'Réglement à 30 jours fin de mois',
                 'nb_jours' => 30,
                 'fdm' => true,
+            ]);
+        }
+    }
+
+    /**
+     * Installation des modes de réglement.
+     */
+    private function installModeReglement(): void
+    {
+        if (ModeReglement::count() === 0) {
+            ModeReglement::create([
+                'code' => 'CB',
+                'name' => 'Carte Bancaire',
+                'type_paiement' => json_encode(['client', 'fournisseur']),
+                'bridgeable' => true,
+            ]);
+            ModeReglement::create([
+                'code' => 'ESP',
+                'name' => 'Espèce',
+                'type_paiement' => json_encode(['client', 'fournisseur']),
+                'bridgeable' => false,
+            ]);
+            ModeReglement::create([
+                'code' => 'VIRSEPA',
+                'name' => 'Virement SEPA',
+                'type_paiement' => json_encode(['client', 'fournisseur']),
+                'bridgeable' => true,
+            ]);
+            ModeReglement::create([
+                'code' => 'PRLV',
+                'name' => 'Prélèvement Bancaire',
+                'type_paiement' => json_encode(['fournisseur']),
+                'bridgeable' => false,
+            ]);
+            ModeReglement::create([
+                'code' => 'CHQ',
+                'name' => 'Chèque',
+                'type_paiement' => json_encode(['fournisseur', 'client']),
+                'bridgeable' => false,
             ]);
         }
     }
