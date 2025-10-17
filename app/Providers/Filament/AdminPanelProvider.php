@@ -6,6 +6,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
 use App\Models\Core\Module;
+use Exception;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -69,7 +70,7 @@ final class AdminPanelProvider extends PanelProvider
     public function defineModuleForHeaderSelect()
     {
         try {
-            if (!Schema::hasTable('modules')) {
+            if (! Schema::hasTable('modules')) {
                 return [];
             }
 
@@ -82,7 +83,7 @@ final class AdminPanelProvider extends PanelProvider
             });
 
             return $fetchs->toArray();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Log error if needed
             return [];
         }
