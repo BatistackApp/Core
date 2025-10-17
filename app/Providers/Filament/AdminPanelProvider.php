@@ -18,6 +18,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use SolutionForest\FilamentHeaderSelect\Components\HeaderSelect;
 use SolutionForest\FilamentHeaderSelect\HeaderSelectPlugin;
@@ -65,6 +66,10 @@ class AdminPanelProvider extends PanelProvider
 
     public function defineModuleForHeaderSelect()
     {
+        // Check if the 'modules' table exists before querying
+        if (!Schema::hasTable('modules')) {
+            return [];
+        }
         $modules = Module::where('is_active', true)
             ->get();
 
