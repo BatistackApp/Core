@@ -68,19 +68,23 @@ final class AdminPanelProvider extends PanelProvider
 
     public function defineModuleForHeaderSelect()
     {
-        // Check if the 'modules' table exists before querying
-        if (! Schema::hasTable('modules')) {
+        try {
+            if (!Schema::hasTable('modules')) {
+                return [];
+            }
+
+            $modules = Module::where('is_active', true)->get();
+
+            $fetchs = $modules->map(function (Module $module) {
+                return HeaderSelect::make($module->slug)
+                    ->label($module->name)
+                    ->url(fn () => route('home'));
+            });
+
+            return $fetchs->toArray();
+        } catch (\Exception $e) {
+            // Log error if needed
             return [];
         }
-        $modules = Module::where('is_active', true)
-            ->get();
-
-        $fetchs = $modules->map(function (Module $module) {
-            return HeaderSelect::make($module->slug)
-                ->label($module->name)
-                ->url(fn () => route('home'));
-        });
-
-        return $fetchs->toArray();
     }
 }
