@@ -54,6 +54,9 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
 
+      - name: Create database.sqlite
+        run: touch database/database.sqlite
+
       - name: 📦 Install dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 

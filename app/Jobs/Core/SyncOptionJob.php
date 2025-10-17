@@ -55,13 +55,13 @@ final class SyncOptionJob implements ShouldQueue
         $api = new Batistack();
 
         try {
-            if (\App\Models\Core\Service::query()->first()->status === ServiceStatus::OK->value) {
+            if (Service::query()->first()->status === ServiceStatus::OK->value) {
                 Log::info('Backup: Service OK');
-                if (\App\Models\Core\Option::query()->where('slug', 'sauvegarde-et-retentions')->exists()) {
+                if (Option::query()->where('slug', 'sauvegarde-et-retentions')->exists()) {
                     Log::info('Backup: Option sauvegarde-et-retentions existe');
                     Artisan::call('backup:run', ['--only-db' => true]);
                     $api->post('/backup', [
-                        'license_key' => \App\Models\Core\Service::query()->first()->service_code,
+                        'license_key' => Service::query()->first()->service_code,
                     ]);
                 }
             }

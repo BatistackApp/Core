@@ -90,7 +90,7 @@ final class InstallApp extends Command
 
         info("Installation du service : {$response['id']}");
 
-        \App\Models\Core\Service::query()->updateOrCreate(['service_code' => $response['service_code']], [
+        Service::query()->updateOrCreate(['service_code' => $response['service_code']], [
             'status' => $response['status'],
             'max_user' => $response['max_user'],
             'storage_limit' => $response['storage_limit'],
@@ -118,7 +118,7 @@ final class InstallApp extends Command
         foreach ($response['modules'] as $module) {
             $this->info("Installation du module : {$module['feature']['name']}");
 
-            \App\Models\Core\Module::query()->updateOrCreate(['slug' => Str::replace('module-', '', (string) $module['feature']['slug'])], [
+            Module::query()->updateOrCreate(['slug' => Str::replace('module-', '', (string) $module['feature']['slug'])], [
                 'name' => $module['feature']['name'],
                 'is_active' => $module['is_active'],
             ]);
@@ -145,7 +145,7 @@ final class InstallApp extends Command
         foreach ($response['options'] as $option) {
             $this->info("Installation de l'option : {$option['product']['name']}");
 
-            \App\Models\Core\Option::query()->updateOrCreate(['slug' => $option['product']['slug']], [
+            Option::query()->updateOrCreate(['slug' => $option['product']['slug']], [
                 'name' => $option['product']['name'],
                 'slug' => $option['product']['slug'],
                 'settings' => json_encode($option['settings']),
@@ -275,7 +275,7 @@ final class InstallApp extends Command
             }
         }
 
-        if($hasBankAggregation) {
+        if ($hasBankAggregation) {
             // Link Vers Bridge Api
         }
 
@@ -314,17 +314,17 @@ final class InstallApp extends Command
                 }
 
                 $progress->finish();
-            } catch(Exception $exception) {
+            } catch (Exception $exception) {
                 Log::error($exception);
                 $this->error("Erreur lors de l'importation des banques, Base primaire insérer");
                 if (app()->environment('local', 'testing')) {
-                    $this->info("Importation des banques en mode local ou de test, banque de test insérée");
+                    $this->info('Importation des banques en mode local ou de test, banque de test insérée');
                     Bank::create([
                         'bridge_id' => 1,
-                        'name' => "Banque de Test",
-                        "logo_bank" => 'https://bank.test',
-                        "status_aggegation" => "healthy",
-                        "status_payment" => "healthy",
+                        'name' => 'Banque de Test',
+                        'logo_bank' => 'https://bank.test',
+                        'status_aggegation' => 'healthy',
+                        'status_payment' => 'healthy',
                     ]);
                 }
             }

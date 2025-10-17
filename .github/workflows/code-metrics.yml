@@ -62,6 +62,9 @@ jobs:
             composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}-
             composer-${{ runner.os }}-
 
+      - name: Create database.sqlite
+        run: touch database/database.sqlite      
+
       - name: 📦 Install dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 

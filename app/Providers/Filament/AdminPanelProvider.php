@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
@@ -23,7 +25,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use SolutionForest\FilamentHeaderSelect\Components\HeaderSelect;
 use SolutionForest\FilamentHeaderSelect\HeaderSelectPlugin;
 
-class AdminPanelProvider extends PanelProvider
+final class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
@@ -67,7 +69,7 @@ class AdminPanelProvider extends PanelProvider
     public function defineModuleForHeaderSelect()
     {
         // Check if the 'modules' table exists before querying
-        if (!Schema::hasTable('modules')) {
+        if (! Schema::hasTable('modules')) {
             return [];
         }
         $modules = Module::where('is_active', true)
@@ -75,8 +77,8 @@ class AdminPanelProvider extends PanelProvider
 
         $fetchs = $modules->map(function (Module $module) {
             return HeaderSelect::make($module->slug)
-                    ->label($module->name)
-                    ->url(fn () => route('home'));
+                ->label($module->name)
+                ->url(fn () => route('home'));
         });
 
         return $fetchs->toArray();

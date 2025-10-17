@@ -78,7 +78,7 @@ return [
              * You can use any model you like for the setting, but it needs to implement
              * the \Rawilk\Settings\Contracts\Setting interface.
              */
-            'model' => \Rawilk\Settings\Models\Setting::class,
+            'model' => Rawilk\Settings\Models\Setting::class,
         ],
     ],
 
@@ -129,7 +129,7 @@ return [
     | - \Rawilk\Settings\Support\ContextSerializers\DotNotationContextSerializer
     |
     */
-    'context_serializer' => \Rawilk\Settings\Support\ContextSerializers\ContextSerializer::class,
+    'context_serializer' => Rawilk\Settings\Support\ContextSerializers\ContextSerializer::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -148,7 +148,7 @@ return [
     | - \Rawilk\Settings\Support\KeyGenerators\HashKeyGenerator
     |
     */
-    'key_generator' => \Rawilk\Settings\Support\KeyGenerators\Md5KeyGenerator::class,
+    'key_generator' => Rawilk\Settings\Support\KeyGenerators\Md5KeyGenerator::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -163,7 +163,7 @@ return [
     | \Rawilk\Settings\Contracts\ValueSerializer interface.
     |
     */
-    'value_serializer' => \Rawilk\Settings\Support\ValueSerializers\ValueSerializer::class,
+    'value_serializer' => Rawilk\Settings\Support\ValueSerializers\ValueSerializer::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -191,9 +191,9 @@ return [
     | an empty array.
     */
     'unserialize_safelist' => [
-        \Carbon\Carbon::class,
-        \Carbon\CarbonImmutable::class,
-        \Illuminate\Support\Carbon::class,
+        Carbon\Carbon::class,
+        Carbon\CarbonImmutable::class,
+        Illuminate\Support\Carbon::class,
     ],
 
     /*

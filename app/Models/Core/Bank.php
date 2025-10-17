@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Core;
 
 use App\Enums\Core\BankStatus;
 use Illuminate\Database\Eloquent\Model;
 
-class Bank extends Model
+final class Bank extends Model
 {
     public $timestamps = false;
 

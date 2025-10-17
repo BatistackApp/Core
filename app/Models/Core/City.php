@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Core;
 
 use Illuminate\Database\Eloquent\Model;
 
-class City extends Model
+final class City extends Model
 {
-    protected $guarded = [];
     public $timestamps = false;
+
+    protected $guarded = [];
 }
