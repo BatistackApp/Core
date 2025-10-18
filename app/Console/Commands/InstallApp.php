@@ -298,8 +298,7 @@ final class InstallApp extends Command
                 $bridge_client_id = app(CreateUser::class)->get();
                 app(AuthenticateUser::class)->get();
             } else {
-                app(DeleteUser::class)->get();
-                $bridge_client_id = app(CreateUser::class)->get();
+                $bridge_client_id = Company::query()->first()->bridge_client_id;
                 app(AuthenticateUser::class)->get();
             }
         }
