@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Filament\Admin\Pages\Settings;
 use App\Filament\Pages\Dashboard;
 use App\Models\Core\Module;
 use Exception;
@@ -22,6 +23,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use SolutionForest\FilamentHeaderSelect\Components\HeaderSelect;
 use SolutionForest\FilamentHeaderSelect\HeaderSelectPlugin;
@@ -33,6 +35,9 @@ final class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('dashboard')
+            ->brandName("Batistack")
+            ->brandLogo(Storage::url('logos/batistack_long_color.png'))
+            
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -40,6 +45,7 @@ final class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
             ->pages([
                 Dashboard::class,
+                Settings::class
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\Filament\Admin\Widgets')
             ->widgets([
@@ -78,7 +84,7 @@ final class AdminPanelProvider extends PanelProvider
 
             $fetchs = $modules->map(fn(Module $module): \SolutionForest\FilamentHeaderSelect\Components\HeaderSelect => HeaderSelect::make($module->slug)
                 ->label($module->name)
-                ->url(fn (): string => route('home')));
+                ->url(fn (): string => route('dashboard')));
 
             return $fetchs->toArray();
         } catch (Exception) {
