@@ -32,7 +32,7 @@ jobs:
             const analysis = analyzePR(files);
             
             // 📝 Construction du message de review
-            let reviewBody = `## 🤖 Auto Review - Laravel/Livewire/Filament
+            let reviewBody = `## 🤖 Auto Review
 
             `;
 
