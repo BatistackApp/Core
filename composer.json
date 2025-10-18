@@ -3,10 +3,7 @@
     "name": "laravel/livewire-starter-kit",
     "type": "project",
     "description": "The official Laravel starter kit for Livewire.",
-    "keywords": [
-        "laravel",
-        "framework"
-    ],
+    "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
         "php": "^8.2",
@@ -23,6 +20,9 @@
         "nunomaduro/essentials": "^1.0",
         "opcodesio/log-viewer": "^3.19",
         "predis/predis": "^3.2",
+        "rap2hpoutre/fast-excel": "^5.6",
+        "rawilk/laravel-settings": "^3.4",
+        "solution-forest/filament-header-select": "^0.0.1",
         "spatie/laravel-backup": "^9.3",
         "wnx/laravel-backup-restore": "^1.7"
     },
@@ -58,7 +58,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
@@ -82,7 +83,6 @@
         "prepare": [
             "./vendor/bin/pint",
             "./vendor/bin/phpstan analyse --memory-limit 2G",
-            "./vendor/bin/rector",
             "composer test"
         ]
     },

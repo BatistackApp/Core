@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "701b9b3b95cce5ea99c13a0ff7bd55c9",
+    "content-hash": "e1df6d150ea2238c6a3b86b43d54046f",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -2945,16 +2945,16 @@
         },
         {
             "name": "league/csv",
-            "version": "9.26.0",
+            "version": "9.27.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/csv.git",
-                "reference": "7fce732754d043f3938899e5183e2d0f3d31b571"
+                "reference": "cb491b1ba3c42ff2bcd0113814f4256b42bae845"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/csv/zipball/7fce732754d043f3938899e5183e2d0f3d31b571",
-                "reference": "7fce732754d043f3938899e5183e2d0f3d31b571",
+                "url": "https://api.github.com/repos/thephpleague/csv/zipball/cb491b1ba3c42ff2bcd0113814f4256b42bae845",
+                "reference": "cb491b1ba3c42ff2bcd0113814f4256b42bae845",
                 "shasum": ""
             },
             "require": {
@@ -3032,7 +3032,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-01T11:24:54+00:00"
+            "time": "2025-10-16T08:22:09+00:00"
         },
         {
             "name": "league/flysystem",
@@ -4456,31 +4456,31 @@
         },
         {
             "name": "nunomaduro/termwind",
-            "version": "v2.3.1",
+            "version": "v2.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nunomaduro/termwind.git",
-                "reference": "dfa08f390e509967a15c22493dc0bac5733d9123"
+                "reference": "eb61920a53057a7debd718a5b89c2178032b52c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nunomaduro/termwind/zipball/dfa08f390e509967a15c22493dc0bac5733d9123",
-                "reference": "dfa08f390e509967a15c22493dc0bac5733d9123",
+                "url": "https://api.github.com/repos/nunomaduro/termwind/zipball/eb61920a53057a7debd718a5b89c2178032b52c0",
+                "reference": "eb61920a53057a7debd718a5b89c2178032b52c0",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
                 "php": "^8.2",
-                "symfony/console": "^7.2.6"
+                "symfony/console": "^7.3.4"
             },
             "require-dev": {
-                "illuminate/console": "^11.44.7",
-                "laravel/pint": "^1.22.0",
+                "illuminate/console": "^11.46.1",
+                "laravel/pint": "^1.25.1",
                 "mockery/mockery": "^1.6.12",
-                "pestphp/pest": "^2.36.0 || ^3.8.2",
-                "phpstan/phpstan": "^1.12.25",
+                "pestphp/pest": "^2.36.0 || ^3.8.4",
+                "phpstan/phpstan": "^1.12.32",
                 "phpstan/phpstan-strict-rules": "^1.6.2",
-                "symfony/var-dumper": "^7.2.6",
+                "symfony/var-dumper": "^7.3.4",
                 "thecodingmachine/phpstan-strict-rules": "^1.0.0"
             },
             "type": "library",
@@ -4523,7 +4523,7 @@
             ],
             "support": {
                 "issues": "https://github.com/nunomaduro/termwind/issues",
-                "source": "https://github.com/nunomaduro/termwind/tree/v2.3.1"
+                "source": "https://github.com/nunomaduro/termwind/tree/v2.3.2"
             },
             "funding": [
                 {
@@ -4539,20 +4539,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-05-08T08:14:37+00:00"
+            "time": "2025-10-18T11:10:27+00:00"
         },
         {
             "name": "opcodesio/log-viewer",
-            "version": "v3.19.0",
+            "version": "v3.21.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/opcodesio/log-viewer.git",
-                "reference": "503c545210f92b65a516de63d9154423271253f1"
+                "reference": "d244fb6307c37051f6e9e3ac880c72797eeb4c83"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/opcodesio/log-viewer/zipball/503c545210f92b65a516de63d9154423271253f1",
-                "reference": "503c545210f92b65a516de63d9154423271253f1",
+                "url": "https://api.github.com/repos/opcodesio/log-viewer/zipball/d244fb6307c37051f6e9e3ac880c72797eeb4c83",
+                "reference": "d244fb6307c37051f6e9e3ac880c72797eeb4c83",
                 "shasum": ""
             },
             "require": {
@@ -4615,7 +4615,7 @@
             ],
             "support": {
                 "issues": "https://github.com/opcodesio/log-viewer/issues",
-                "source": "https://github.com/opcodesio/log-viewer/tree/v3.19.0"
+                "source": "https://github.com/opcodesio/log-viewer/tree/v3.21.0"
             },
             "funding": [
                 {
@@ -4627,7 +4627,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-07-25T12:54:37+00:00"
+            "time": "2025-10-18T10:17:51+00:00"
         },
         {
             "name": "opcodesio/mail-parser",
@@ -5950,6 +5950,156 @@
             "time": "2025-09-04T20:59:21+00:00"
         },
         {
+            "name": "rap2hpoutre/fast-excel",
+            "version": "v5.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/rap2hpoutre/fast-excel.git",
+                "reference": "a460ac5b78f01162eadcae49053017686c53e102"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/rap2hpoutre/fast-excel/zipball/a460ac5b78f01162eadcae49053017686c53e102",
+                "reference": "a460ac5b78f01162eadcae49053017686c53e102",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0",
+                "openspout/openspout": "^4.24",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "illuminate/database": "^6.20.12 || ^7.30.4 || ^8.24.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0",
+                "phpunit/phpunit": "^9.5 || ^10.1",
+                "squizlabs/php_codesniffer": "3.*"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Rap2hpoutre\\FastExcel\\Providers\\FastExcelServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/functions/fastexcel.php"
+                ],
+                "psr-4": {
+                    "Rap2hpoutre\\FastExcel\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "rap2h",
+                    "email": "raphaelht@gmail.com"
+                }
+            ],
+            "description": "Fast Excel import/export for Laravel",
+            "keywords": [
+                "csv",
+                "excel",
+                "laravel",
+                "xls",
+                "xlsx"
+            ],
+            "support": {
+                "issues": "https://github.com/rap2hpoutre/fast-excel/issues",
+                "source": "https://github.com/rap2hpoutre/fast-excel/tree/v5.6.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/rap2hpoutre",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-02-18T12:50:31+00:00"
+        },
+        {
+            "name": "rawilk/laravel-settings",
+            "version": "v3.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/rawilk/laravel-settings.git",
+                "reference": "94738ac331612f1cf0dfae2ce4f4ff212cd89eb4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/rawilk/laravel-settings/zipball/94738ac331612f1cf0dfae2ce4f4ff212cd89eb4",
+                "reference": "94738ac331612f1cf0dfae2ce4f4ff212cd89eb4",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "^10.0|^11.0|^12.0",
+                "illuminate/support": "^10.0|^11.0|^12.0",
+                "php": "^8.1",
+                "spatie/laravel-package-tools": "^1.13"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.2",
+                "orchestra/testbench": "^8.0|^9.0|^10.0",
+                "pestphp/pest": "^2.10|^3.0",
+                "pestphp/pest-plugin-laravel": "^2.2|^3.0",
+                "spatie/laravel-ray": "^1.31"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Settings": "Rawilk\\Settings\\Facades\\Settings",
+                        "SettingsFactory": "Rawilk\\Settings\\Drivers\\Factory"
+                    },
+                    "providers": [
+                        "Rawilk\\Settings\\SettingsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "Rawilk\\Settings\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Randall Wilk",
+                    "email": "randall@randallwilk.dev",
+                    "homepage": "https://randallwilk.dev",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Store Laravel application settings in the database.",
+            "homepage": "https://github.com/rawilk/laravel-settings",
+            "keywords": [
+                "Settings",
+                "database settings",
+                "eloquent model settings",
+                "laravel-settings",
+                "rawilk"
+            ],
+            "support": {
+                "issues": "https://github.com/rawilk/laravel-settings/issues",
+                "source": "https://github.com/rawilk/laravel-settings/tree/v3.4.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/rawilk",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-02-25T20:23:16+00:00"
+        },
+        {
             "name": "ryangjchandler/blade-capture-directive",
             "version": "v1.1.0",
             "source": {
@@ -6104,6 +6254,61 @@
                 }
             ],
             "time": "2022-12-17T21:53:22+00:00"
+        },
+        {
+            "name": "solution-forest/filament-header-select",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/solutionforest/filament-header-select.git",
+                "reference": "200806f8ee061d9d0e155a8b142ef11069157dfb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/solutionforest/filament-header-select/zipball/200806f8ee061d9d0e155a8b142ef11069157dfb",
+                "reference": "200806f8ee061d9d0e155a8b142ef11069157dfb",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^3.0|^4.0",
+                "illuminate/contracts": "^10.0|^11.0|^12.0",
+                "livewire/livewire": "^3.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.24",
+                "orchestra/testbench": "^8.0|^9.0",
+                "pestphp/pest": "^3.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "SolutionForest\\FilamentHeaderSelect\\HeaderSelectServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "SolutionForest\\FilamentHeaderSelect\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Solution Forest",
+                    "email": "hello@solutionforest.com"
+                }
+            ],
+            "description": "A simple, powerful header select component for Filament admin panels",
+            "support": {
+                "issues": "https://github.com/solutionforest/filament-header-select/issues",
+                "source": "https://github.com/solutionforest/filament-header-select/tree/v0.0.1"
+            },
+            "time": "2025-09-04T15:47:09+00:00"
         },
         {
             "name": "spatie/db-dumper",

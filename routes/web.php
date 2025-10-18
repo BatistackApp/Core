@@ -8,18 +8,14 @@ use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
 
 Route::get('/', fn (): Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory => view('welcome'))->name('home');
-
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
 Route::get('/test', function (): void {
     $api = new Batistack();
 
-    dd($api->get('/license/info', ['license_key' => 'SRV-20251014-FNN6T']));
+    dd($api->get('/license/info', ['license_key' => 'SRV-20251017-9S3N8']));
 });
 
 Route::middleware(['auth'])->group(function (): void {
+    Route::get('/dashboard', fn (): Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory => view('dashboard'))->name('dashboard');
     Route::redirect('settings', 'settings/profile');
 
     Volt::route('settings/profile', 'settings.profile')->name('profile.edit');

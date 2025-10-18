@@ -40,7 +40,7 @@ final class CoreController extends Controller
         $license = collect();
 
         $storageBase = 0;
-        $storageBaseMax = \App\Models\Core\Service::query()->first()->storage_limit * 1024 * 1024 * 1024;
+        $storageBaseMax = Service::query()->first()->storage_limit * 1024 * 1024 * 1024;
         foreach (Storage::disk('public')->allFiles('upload') as $file) {
             $storageBase += Storage::disk('public')->size($file);
         }
