@@ -32,7 +32,9 @@ jobs:
             const analysis = analyzePR(files);
             
             // 📝 Construction du message de review
-            let reviewBody = '## 🤖 Auto Review - Laravel/Livewire/Filament\\n\\n';
+            let reviewBody = `## 🤖 Auto Review - Laravel/Livewire/Filament
+
+            `;
 
             if (analysis.hasLivewireChanges && !analysis.hasLivewireTests) {
               warnings.push('**Livewire**: Composants modifiés sans tests correspondants');
@@ -60,20 +62,26 @@ jobs:
 
             // 🎯 Ajout des sections au review
             if (warnings.length > 0) {
-              reviewBody += '### ⚠️ Points de Vigilance\\n';
-              warnings.forEach(warning => reviewBody += `- ${warning}\\n`);
-              reviewBody += '\\n';
+              reviewBody += `### ⚠️ Points de Vigilance`;
+              warnings.forEach(warning => reviewBody += `- ${warning}`);
+              reviewBody += `
+              `;
             }
 
             if (suggestions.length > 0) {
-              reviewBody += '### 💡 Suggestions\\n';
-              suggestions.forEach(suggestion => reviewBody += `- ${suggestion}\\n`);
-              reviewBody += '\\n';
+              reviewBody += `### 💡 Suggestions
+              `;
+              suggestions.forEach(suggestion => reviewBody += `- ${suggestion}
+              `);
+              reviewBody += `
+              `;
             }
 
             if (analysis.positiveAspects.length > 0) {
-              reviewBody += '### ✅ Points Positifs\\n';
-              analysis.positiveAspects.forEach(point => reviewBody += `- ${point}\\n`);
+              reviewBody += `### ✅ Points Positifs
+              `;
+              analysis.positiveAspects.forEach(point => reviewBody += `- ${point}
+              `);
             }
 
             // 🚨 Déterminer le statut de la review
@@ -81,7 +89,8 @@ jobs:
             if (warnings.length > 2 || analysis.criticalIssues.length > 0) {
               event = 'REQUEST_CHANGES';
             } else if (warnings.length === 0 && suggestions.length === 0) {
-              reviewBody += '\\n🎉 Aucun problème détecté automatiquement!';
+              reviewBody += `
+              🎉 Aucun problème détecté automatiquement!`;
             }
 
             // 📤 Poster la review
