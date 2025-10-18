@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Action\Aggregation\User\AuthenticateUser;
+use App\Action\Aggregation\User\CreateUser;
 use App\Jobs\Core\SyncOptionJob;
 use App\Models\Comptabilite\PlanComptable;
 use App\Models\Core\Bank;
@@ -16,6 +18,7 @@ use App\Models\Core\Option;
 use App\Models\Core\Service;
 use App\Services\Batistack;
 use App\Services\Bridge;
+use DeleteUser;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -257,14 +260,28 @@ final class InstallApp extends Command
     {
         $api = new Batistack();
         $response = $api->get('/license/info', ['license_key' => $license_key]);
+        $hasBankAggregation = false;
+        $bridge_client_id = null;
 
         if (! isset($response['customer'])) {
             $this->error('Installation des informations de la société impossible');
         }
 
+        $this->info('Installation des informations de la société');
+
+        Company::query()->updateOrCreate(['id' => 1],[
+            'name' => $response['customer']['entreprise'],
+            'address' => $response['customer']['adresse'],
+            'code_postal' => $response['customer']['code_postal'],
+            'ville' => $response['customer']['ville'],
+            'pays' => $response['customer']['pays'],
+            'phone' => $response['customer']['tel'],
+            'email' => $response['customer']['user']['email'],
+            'bridge_client_id' => $bridge_client_id,
+        ]);
+
         // Vérifier si l'option 'aggregation-bancaire' est présente
-        $hasBankAggregation = false;
-        $bridge_client_id = null;
+        
         if (isset($response['options']) && is_array($response['options'])) {
             foreach ($response['options'] as $option) {
                 if (isset($option['product']['slug']) && $option['product']['slug'] === 'aggregation-bancaire') {
@@ -277,18 +294,15 @@ final class InstallApp extends Command
 
         if ($hasBankAggregation) {
             // Link Vers Bridge Api
-        }
-
-        Company::query()->create([
-            'name' => $response['customer']['entreprise'],
-            'address' => $response['customer']['adresse'],
-            'code_postal' => $response['customer']['code_postal'],
-            'ville' => $response['customer']['ville'],
-            'pays' => $response['customer']['pays'],
-            'phone' => $response['customer']['tel'],
-            'email' => $response['customer']['user']['email'],
-            'bridge_client_id' => $bridge_client_id,
-        ]);
+            if(!Company::query()->first()->bridge_client_id) {
+                $bridge_client_id = app(CreateUser::class)->get();
+                app(AuthenticateUser::class)->get();
+            } else {
+                app(DeleteUser::class)->get();
+                $bridge_client_id = app(CreateUser::class)->get();
+                app(AuthenticateUser::class)->get();
+            }            
+        }        
     }
 
     private function importBank()
@@ -336,6 +350,7 @@ final class InstallApp extends Command
      */
     private function installConditionReglement(): void
     {
+        $this->info('Installation des conditions de réglement');
         if (ConditionReglement::count() === 0) {
             ConditionReglement::create([
                 'code' => 'RECEP',
@@ -366,6 +381,7 @@ final class InstallApp extends Command
      */
     private function installModeReglement(): void
     {
+        $this->info('Installation des modes de réglement');
         if (ModeReglement::count() === 0) {
             ModeReglement::create([
                 'code' => 'CB',

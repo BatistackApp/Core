@@ -42,6 +42,7 @@ return [
         'client_secret' => env('BRIDGE_CLIENT_SECRET'),
         'endpoint' => 'https://api.bridgeapi.io/v3/',
         'version' => '2025-01-15',
+        'callback_url' => env('BRIDGE_CALLBACK_URL'),
     ],
 
 ];

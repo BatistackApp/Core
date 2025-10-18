@@ -91,6 +91,41 @@ final readonly class Bridge
         }
     }
 
+    public function delete(string $folder, ?array $data = null, ?string $withToken = null): ?array
+    {
+        try {
+            if ($withToken !== null && $withToken !== '' && $withToken !== '0') {
+                $request = Http::withoutVerifying()->withHeaders([
+                    'Bridge-Version' => config('services.bridge.version'),
+                    'Client-Id' => $this->client_id,
+                    'Client-Secret' => $this->client_secret,
+                    'accept' => 'application/json',
+                    'authorization' => 'Bearer '.$withToken,
+                    'content-type' => 'application/json',
+                ])
+                    ->delete(config('services.bridge.endpoint').$folder, $data)
+                    ->json();
+            } else {
+                $request = Http::withoutVerifying()->withHeaders([
+                    'Bridge-Version' => config('services.bridge.version'),
+                    'Client-Id' => $this->client_id,
+                    'Client-Secret' => $this->client_secret,
+                    'accept' => 'application/json',
+                    'content-type' => 'application/json',
+                ])
+                    ->delete(config('services.bridge.endpoint').$folder, $data)
+                    ->json();
+            }
+
+            return collect($request)->toArray();
+        } catch (Exception $exception) {
+            Log::emergency($exception);
+            Log::channel('github')->emergency($exception);
+
+            return null;
+        }
+    }
+
     public function getAccessToken(): void
     {
         if (! cache()->has('bridge_access_token')) {
