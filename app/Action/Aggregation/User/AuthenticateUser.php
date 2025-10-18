@@ -1,23 +1,31 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Action\Aggregation\User;
 
 use App\Models\Core\Company;
 use App\Services\Bridge;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
-class AuthenticateUser
+final readonly class AuthenticateUser
 {
-    public function get()
+    public function __construct(
+        private Bridge $bridge,
+    ) {}
+
+    public function get(): void
     {
         $company = Company::query()->first();
-        
+
         try {
-            $authToken = app(Bridge::class)->post('aggregation/authorization/token', [
+            $authToken = $this->bridge->post('aggregation/authorization/token', [
                 'user_uuid' => $company->bridge_client_id,
             ]);
             cache()->put('bridge_access_token', $authToken['access_token']);
-        } catch (\Exception $exception) {
-            Log::emergency("Bridge API error: ".$exception->getMessage(), ['exception' => $exception]);
+        } catch (Exception $exception) {
+            Log::emergency('Bridge API error: '.$exception->getMessage(), ['exception' => $exception]);
         }
     }
 }

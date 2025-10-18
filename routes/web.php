@@ -8,7 +8,6 @@ use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
 
 Route::get('/', fn (): Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory => view('welcome'))->name('home');
-
 Route::get('/test', function (): void {
     $api = new Batistack();
 
@@ -16,6 +15,7 @@ Route::get('/test', function (): void {
 });
 
 Route::middleware(['auth'])->group(function (): void {
+    Route::get('/dashboard', fn (): Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory => view('dashboard'))->name('dashboard');
     Route::redirect('settings', 'settings/profile');
 
     Volt::route('settings/profile', 'settings.profile')->name('profile.edit');

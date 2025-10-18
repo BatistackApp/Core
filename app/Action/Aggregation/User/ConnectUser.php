@@ -1,18 +1,24 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Action\Aggregation\User;
 
 use App\Models\Core\Company;
 use App\Services\Bridge;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
-class ConnectUser
+final readonly class ConnectUser
 {
-    public function get()
+    public function __construct(private Bridge $bridge) {}
+
+    public function get(): string
     {
         $company = Company::query()->first();
 
         try {
-            $session = app(Bridge::class)->post('aggregation/connect-sessions', [
+            $session = $this->bridge->post('aggregation/connect-sessions', [
                 'user_email' => $company->email,
                 'country_code' => 'FR',
                 'callback_url' => config('services.bridge.callback_url'),
@@ -23,8 +29,9 @@ class ConnectUser
             }
 
             return $session['url'];
-        } catch (\Exception $exception) {
-            Log::emergency("Bridge API error: ".$exception->getMessage(), ['exception' => $exception]);
+        } catch (Exception $exception) {
+            Log::emergency('Bridge API error: '.$exception->getMessage(), ['exception' => $exception]);
+
             return $exception->getMessage();
         }
     }

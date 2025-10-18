@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('plan_comptables', function (Blueprint $table) {
+        Schema::create('plan_comptables', function (Blueprint $table): void {
             $table->id();
             $table->string('code')->nullable();
             $table->string('account')->nullable();

@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create(config('settings.table'), function (Blueprint $table) {
+        Schema::create(config('settings.table'), function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->string('key')->unique()->index();
             $table->longText('value')->nullable();

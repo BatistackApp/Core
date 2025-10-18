@@ -67,23 +67,21 @@ final class AdminPanelProvider extends PanelProvider
             ]);
     }
 
-    public function defineModuleForHeaderSelect()
+    public function defineModuleForHeaderSelect(): array
     {
         try {
             if (! Schema::hasTable('modules')) {
                 return [];
             }
 
-            $modules = Module::where('is_active', true)->get();
+            $modules = \App\Models\Core\Module::query()->where('is_active', true)->get();
 
-            $fetchs = $modules->map(function (Module $module) {
-                return HeaderSelect::make($module->slug)
-                    ->label($module->name)
-                    ->url(fn () => route('home'));
-            });
+            $fetchs = $modules->map(fn(Module $module): \SolutionForest\FilamentHeaderSelect\Components\HeaderSelect => HeaderSelect::make($module->slug)
+                ->label($module->name)
+                ->url(fn (): string => route('home')));
 
             return $fetchs->toArray();
-        } catch (Exception $e) {
+        } catch (Exception) {
             // Log error if needed
             return [];
         }

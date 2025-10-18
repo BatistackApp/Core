@@ -9,7 +9,7 @@ use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-final readonly class Bridge
+class Bridge
 {
     private string $client_id;
 
@@ -21,10 +21,14 @@ final readonly class Bridge
         $this->client_secret = config('services.bridge.client_secret');
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function get(string $folder, ?array $data = null, ?string $withToken = null): ?array
     {
         try {
             if ($withToken !== null && $withToken !== '' && $withToken !== '0') {
+                /** @var array<string, mixed>|null $request */
                 $request = Http::withoutVerifying()->withHeaders([
                     'Bridge-Version' => config('services.bridge.version'),
                     'Client-Id' => $this->client_id,
@@ -36,6 +40,7 @@ final readonly class Bridge
                     ->get(config('services.bridge.endpoint').$folder, $data)
                     ->json();
             } else {
+                /** @var array<string, mixed>|null $request */
                 $request = Http::withoutVerifying()->withHeaders([
                     'Bridge-Version' => config('services.bridge.version'),
                     'Client-Id' => $this->client_id,
@@ -47,7 +52,7 @@ final readonly class Bridge
                     ->json();
             }
 
-            return collect($request)->toArray();
+            return $request !== null ? (array) $request : null;
         } catch (Exception $exception) {
             Log::emergency($exception);
             Log::channel('github')->emergency($exception);
@@ -56,10 +61,14 @@ final readonly class Bridge
         }
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function post(string $folder, ?array $data = null, ?string $withToken = null): ?array
     {
         try {
             if ($withToken !== null && $withToken !== '' && $withToken !== '0') {
+                /** @var array<string, mixed>|null $request */
                 $request = Http::withoutVerifying()->withHeaders([
                     'Bridge-Version' => config('services.bridge.version'),
                     'Client-Id' => $this->client_id,
@@ -71,6 +80,7 @@ final readonly class Bridge
                     ->post(config('services.bridge.endpoint').$folder, $data)
                     ->json();
             } else {
+                /** @var array<string, mixed>|null $request */
                 $request = Http::withoutVerifying()->withHeaders([
                     'Bridge-Version' => config('services.bridge.version'),
                     'Client-Id' => $this->client_id,
@@ -82,7 +92,7 @@ final readonly class Bridge
                     ->json();
             }
 
-            return collect($request)->toArray();
+            return $request !== null ? (array) $request : null;
         } catch (Exception $exception) {
             Log::emergency($exception);
             Log::channel('github')->emergency($exception);
@@ -91,10 +101,14 @@ final readonly class Bridge
         }
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function delete(string $folder, ?array $data = null, ?string $withToken = null): ?array
     {
         try {
             if ($withToken !== null && $withToken !== '' && $withToken !== '0') {
+                /** @var array<string, mixed>|null $request */
                 $request = Http::withoutVerifying()->withHeaders([
                     'Bridge-Version' => config('services.bridge.version'),
                     'Client-Id' => $this->client_id,
@@ -106,6 +120,7 @@ final readonly class Bridge
                     ->delete(config('services.bridge.endpoint').$folder, $data)
                     ->json();
             } else {
+                /** @var array<string, mixed>|null $request */
                 $request = Http::withoutVerifying()->withHeaders([
                     'Bridge-Version' => config('services.bridge.version'),
                     'Client-Id' => $this->client_id,
@@ -117,7 +132,7 @@ final readonly class Bridge
                     ->json();
             }
 
-            return collect($request)->toArray();
+            return $request !== null ? (array) $request : null;
         } catch (Exception $exception) {
             Log::emergency($exception);
             Log::channel('github')->emergency($exception);
@@ -130,9 +145,12 @@ final readonly class Bridge
     {
         if (! cache()->has('bridge_access_token')) {
             $authToken = $this->post('aggregation/authorization/token', [
-                'user_uuid' => Company::first()->bridge_client_id,
+                'user_uuid' => \App\Models\Core\Company::query()->first()->bridge_client_id,
             ]);
-            cache()->put('bridge_access_token', $authToken['access_token']);
+
+            if ($authToken && isset($authToken['access_token'])) {
+                cache()->put('bridge_access_token', $authToken['access_token']);
+            }
         }
     }
 }

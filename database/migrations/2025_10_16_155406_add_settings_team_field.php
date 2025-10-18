@@ -14,7 +14,7 @@ return new class extends Migration
             return;
         }
 
-        Schema::table(config('settings.table'), function (Blueprint $table) {
+        Schema::table(config('settings.table'), function (Blueprint $table): void {
             $table->unsignedBigInteger(config('settings.team_foreign_key'))->nullable()->after('id');
             $table->index(config('settings.team_foreign_key'), 'settings_team_id_index');
 
