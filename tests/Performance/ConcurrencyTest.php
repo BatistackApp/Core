@@ -14,7 +14,6 @@ test('requêtes multiples sont performantes', function () {
 
     $routes = [
         route('home'),
-        route('dashboard'),
         route('profile.edit'),
         route('password.edit'),
     ];

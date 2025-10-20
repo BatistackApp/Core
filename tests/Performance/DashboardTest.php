@@ -16,7 +16,7 @@ test('tableau de bord se charge rapidement', function () {
     // Mesurer le temps de chargement du tableau de bord
     $startTime = microtime(true);
 
-    $response = $this->get(route('dashboard'));
+    $response = $this->get('/dashboard');
 
     $endTime = microtime(true);
     $loadTime = $endTime - $startTime;
