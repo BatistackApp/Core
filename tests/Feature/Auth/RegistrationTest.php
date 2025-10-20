@@ -20,7 +20,7 @@ test('new users can register', function () {
 
     $response
         ->assertHasNoErrors()
-        ->assertRedirect(route('home', absolute: false));
+        ->assertRedirect('/dashboard');
 
     $this->assertAuthenticated();
 });
