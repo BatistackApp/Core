@@ -7,6 +7,7 @@ use App\Enums\Tiers\TiersType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Tiers extends Model
 {
@@ -24,6 +25,16 @@ class Tiers extends Model
     public function contacts(): HasMany
     {
         return $this->hasMany(TiersContact::class);
+    }
+
+    public function supply(): HasOne
+    {
+        return $this->hasOne(TiersSupply::class);
+    }
+
+    public function customer(): HasOne
+    {
+        return $this->hasOne(TiersCustomer::class);
     }
 
     public function getNextId(): int|float
