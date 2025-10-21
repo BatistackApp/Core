@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Models\Core\Module;
+use Exception;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -16,10 +18,14 @@ use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use SolutionForest\FilamentHeaderSelect\Components\HeaderSelect;
+use SolutionForest\FilamentHeaderSelect\HeaderSelectPlugin;
 
 final class TiersPanelProvider extends PanelProvider
 {
@@ -56,6 +62,30 @@ final class TiersPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+            ])
+            ->plugins([
+                HeaderSelectPlugin::make()
+                    ->rounded('rounded-sm')
+                    ->selects($this->defineModuleForHeaderSelect()),
             ]);
+    }
+
+    public function defineModuleForHeaderSelect(): array
+    {
+        try {
+            if (! Schema::hasTable('modules')) {
+                return [];
+            }
+
+            $modules = Module::query()->where('is_active', true)->get();
+
+            $fetchs = $modules->map(fn (Module $module): HeaderSelect => HeaderSelect::make($module->slug)
+                ->label($module->name));
+
+            return $fetchs->toArray();
+        } catch (Exception) {
+            // Log error if needed
+            return [];
+        }
     }
 }
