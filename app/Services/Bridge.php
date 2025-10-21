@@ -9,7 +9,7 @@ use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-final class Bridge
+class Bridge
 {
     private string $client_id;
 
