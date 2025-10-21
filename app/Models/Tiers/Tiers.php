@@ -6,6 +6,7 @@ use App\Enums\Tiers\TiersNature;
 use App\Enums\Tiers\TiersType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tiers extends Model
 {
@@ -14,6 +15,11 @@ class Tiers extends Model
 
     protected $guarded = [];
     public $timestamps = false;
+
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(TiersAddress::class);
+    }
 
     public function getNextId(): int|float
     {
