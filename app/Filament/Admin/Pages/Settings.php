@@ -98,7 +98,6 @@ class Settings extends Page implements HasSchemas
 
     public function updateSetting()
     {
-        dd($this->form->getState());
         try {
             Company::query()
             ->first()
