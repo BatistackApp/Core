@@ -1,13 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\Core;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class CreateUserNotification extends Notification
+final class CreateUserNotification extends Notification
 {
     use Queueable;
 
@@ -32,15 +33,15 @@ class CreateUserNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("Votre espace à été créer sur le logiciel BATISTACK")
+            ->subject('Votre espace à été créer sur le logiciel BATISTACK')
             ->greeting("Bonjour {$notifiable->name},")
-            ->line("Votre espace à été créer sur le logiciel BATISTACK.")
-            ->line("Voici vos informations de connexion :")
+            ->line('Votre espace à été créer sur le logiciel BATISTACK.')
+            ->line('Voici vos informations de connexion :')
             ->line("Email : {$notifiable->email}")
             ->line("Mot de passe : {$this->password}")
             ->line("N'oubliez pas de changer votre mot de passe une fois connecté.")
-            ->line("Merci de ne pas répondre à ce mail.")
-            ->action("Se connecter", url('/login'));
+            ->line('Merci de ne pas répondre à ce mail.')
+            ->action('Se connecter', url('/login'));
     }
 
     /**

@@ -9,7 +9,7 @@ use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class Bridge
+final class Bridge
 {
     private string $client_id;
 
@@ -145,7 +145,7 @@ class Bridge
     {
         if (! cache()->has('bridge_access_token')) {
             $authToken = $this->post('aggregation/authorization/token', [
-                'user_uuid' => \App\Models\Core\Company::query()->first()->bridge_client_id,
+                'user_uuid' => Company::query()->first()->bridge_client_id,
             ]);
 
             if ($authToken && isset($authToken['access_token'])) {

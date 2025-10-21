@@ -35,7 +35,7 @@ final class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('dashboard')
-            ->brandName("Batistack")
+            ->brandName('Batistack')
             ->brandLogo(Storage::url('logos/batistack_long_color.png'))
             ->colors([
                 'primary' => Color::Blue,
@@ -44,7 +44,7 @@ final class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
             ->pages([
                 Dashboard::class,
-                Settings::class
+                Settings::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\Filament\Admin\Widgets')
             ->widgets([
@@ -79,9 +79,9 @@ final class AdminPanelProvider extends PanelProvider
                 return [];
             }
 
-            $modules = \App\Models\Core\Module::query()->where('is_active', true)->get();
+            $modules = Module::query()->where('is_active', true)->get();
 
-            $fetchs = $modules->map(fn(Module $module): \SolutionForest\FilamentHeaderSelect\Components\HeaderSelect => HeaderSelect::make($module->slug)
+            $fetchs = $modules->map(fn (Module $module): HeaderSelect => HeaderSelect::make($module->slug)
                 ->label($module->name));
 
             return $fetchs->toArray();

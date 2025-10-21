@@ -6,7 +6,6 @@ namespace App\Console\Commands;
 
 use App\Action\Aggregation\User\AuthenticateUser;
 use App\Action\Aggregation\User\CreateUser;
-use App\Action\Aggregation\User\DeleteUser;
 use App\Jobs\Core\SyncOptionJob;
 use App\Models\Comptabilite\PlanComptable;
 use App\Models\Core\Bank;
@@ -209,7 +208,7 @@ final class InstallApp extends Command
      */
     private function installCountries(): void
     {
-        if (\App\Models\Core\Country::query()->count() === 0) {
+        if (Country::query()->count() === 0) {
             $this->info('Installation des informations des pays');
 
             $countries = Http::withoutVerifying()
@@ -220,7 +219,7 @@ final class InstallApp extends Command
             $bar->start();
 
             foreach ($countries as $country) {
-                \App\Models\Core\Country::query()->create([
+                Country::query()->create([
                     'name' => $country,
                 ]);
                 $bar->advance();
@@ -235,13 +234,13 @@ final class InstallApp extends Command
     private function installPcg(): void
     {
         $collects = (new FastExcel)->import(base_path('database/json/pcg.xlsx'));
-        if (\App\Models\Comptabilite\PlanComptable::query()->count() === 0) {
+        if (PlanComptable::query()->count() === 0) {
             $this->info('Installation du plan comptable général');
             $bar = $this->output->createProgressBar($collects->count());
             $bar->start();
 
             foreach ($collects as $account) {
-                \App\Models\Comptabilite\PlanComptable::query()->create([
+                PlanComptable::query()->create([
                     'code' => $account['Code'],
                     'account' => $account['account'],
                     'type' => $account['type'],
@@ -306,7 +305,7 @@ final class InstallApp extends Command
 
     private function importBank(): void
     {
-        if (\App\Models\Core\Bank::query()->count() !== 0) {
+        if (Bank::query()->count() !== 0) {
             $bridge = new Bridge();
             $this->info('Installation des banques française');
 
@@ -316,7 +315,7 @@ final class InstallApp extends Command
                 $progress->start();
 
                 foreach ($call as $bank) {
-                    \App\Models\Core\Bank::query()->create([
+                    Bank::query()->create([
                         'bridge_id' => $bank['id'],
                         'name' => $bank['name'],
                         'logo_bank' => $bank['images']['logo'],
@@ -332,7 +331,7 @@ final class InstallApp extends Command
                 $this->error("Erreur lors de l'importation des banques, Base primaire insérer");
                 if (app()->environment('local', 'testing')) {
                     $this->info('Importation des banques en mode local ou de test, banque de test insérée');
-                    \App\Models\Core\Bank::query()->create([
+                    Bank::query()->create([
                         'bridge_id' => 1,
                         'name' => 'Banque de Test',
                         'logo_bank' => 'https://bank.test',
@@ -350,22 +349,22 @@ final class InstallApp extends Command
     private function installConditionReglement(): void
     {
         $this->info('Installation des conditions de réglement');
-        if (\App\Models\Core\ConditionReglement::query()->count() === 0) {
-            \App\Models\Core\ConditionReglement::query()->create([
+        if (ConditionReglement::query()->count() === 0) {
+            ConditionReglement::query()->create([
                 'code' => 'RECEP',
                 'name' => 'A Réception',
                 'name_document' => 'A Réception',
                 'nb_jours' => 1,
                 'fdm' => false,
             ]);
-            \App\Models\Core\ConditionReglement::query()->create([
+            ConditionReglement::query()->create([
                 'code' => '30D',
                 'name' => '30 Jours',
                 'name_document' => 'Réglement à 30 jours',
                 'nb_jours' => 30,
                 'fdm' => false,
             ]);
-            \App\Models\Core\ConditionReglement::query()->create([
+            ConditionReglement::query()->create([
                 'code' => '30DMONTH',
                 'name' => '30 Jours fin de mois',
                 'name_document' => 'Réglement à 30 jours fin de mois',
@@ -381,32 +380,32 @@ final class InstallApp extends Command
     private function installModeReglement(): void
     {
         $this->info('Installation des modes de réglement');
-        if (\App\Models\Core\ModeReglement::query()->count() === 0) {
-            \App\Models\Core\ModeReglement::query()->create([
+        if (ModeReglement::query()->count() === 0) {
+            ModeReglement::query()->create([
                 'code' => 'CB',
                 'name' => 'Carte Bancaire',
                 'type_paiement' => json_encode(['client', 'fournisseur']),
                 'bridgeable' => true,
             ]);
-            \App\Models\Core\ModeReglement::query()->create([
+            ModeReglement::query()->create([
                 'code' => 'ESP',
                 'name' => 'Espèce',
                 'type_paiement' => json_encode(['client', 'fournisseur']),
                 'bridgeable' => false,
             ]);
-            \App\Models\Core\ModeReglement::query()->create([
+            ModeReglement::query()->create([
                 'code' => 'VIRSEPA',
                 'name' => 'Virement SEPA',
                 'type_paiement' => json_encode(['client', 'fournisseur']),
                 'bridgeable' => true,
             ]);
-            \App\Models\Core\ModeReglement::query()->create([
+            ModeReglement::query()->create([
                 'code' => 'PRLV',
                 'name' => 'Prélèvement Bancaire',
                 'type_paiement' => json_encode(['fournisseur']),
                 'bridgeable' => false,
             ]);
-            \App\Models\Core\ModeReglement::query()->create([
+            ModeReglement::query()->create([
                 'code' => 'CHQ',
                 'name' => 'Chèque',
                 'type_paiement' => json_encode(['fournisseur', 'client']),

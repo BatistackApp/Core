@@ -1,30 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Pages;
 
 use App\Models\Core\Company;
-use Filament\Pages\Page;
 use BackedEnum;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 
-class Settings extends Page implements HasSchemas
+final class Settings extends Page implements HasSchemas
 {
     use InteractsWithSchemas;
-    protected string $view = 'filament.admin.pages.settings';
-    protected static ?string $title = 'Paramètres Générales';
-    protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-cog-8-tooth';
+
     public ?array $data = [];
 
-    public function mount()
-    {        
+    protected string $view = 'filament.admin.pages.settings';
+
+    protected static ?string $title = 'Paramètres Générales';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cog-8-tooth';
+
+    public function mount(): void
+    {
         $this->form->fill(Company::query()->first()->toArray());
     }
 
@@ -33,7 +39,7 @@ class Settings extends Page implements HasSchemas
         return $schema
             ->components([
                 Section::make('Société')
-                    ->description("Paramètres généraux de la société")
+                    ->description('Paramètres généraux de la société')
                     ->schema([
                         Section::make('Informations')
                             ->aside()
@@ -44,8 +50,8 @@ class Settings extends Page implements HasSchemas
 
                                 TextInput::make('address')
                                     ->label('Adresse de la société')
-                                    ->required(),  
-                                    
+                                    ->required(),
+
                                 Grid::make()
                                     ->columns(12)
                                     ->schema([
@@ -63,11 +69,11 @@ class Settings extends Page implements HasSchemas
                                             ->label('Pays')
                                             ->required()
                                             ->columnSpan(4),
-                                    ]), 
+                                    ]),
                             ]),
 
                         Section::make('Fiscalité')
-                            ->description("Paramètres fiscaux de la société")
+                            ->description('Paramètres fiscaux de la société')
                             ->aside()
                             ->schema([
                                 TextInput::make('num_tva')
@@ -83,38 +89,36 @@ class Settings extends Page implements HasSchemas
                                         TextInput::make('ape')
                                             ->label('Numéro d\'APE')
                                             ->columnSpan(2),
-                                    ]), 
-                            ]),  
-                    ])                    
+                                    ]),
+                            ]),
+                    ])
                     ->collapsible()
                     ->footer([
                         Action::make('submit')
-                            ->label("Valider")
+                            ->label('Valider')
                             ->action(fn () => $this->updateSetting()),
                     ]),
             ])
             ->statePath('data');
     }
 
-    public function updateSetting()
+    public function updateSetting(): void
     {
         try {
             Company::query()
-            ->first()
-            ->update($this->form->getState());
+                ->first()
+                ->update($this->form->getState());
 
             Notification::make()
-                ->title("Paramètres mis à jour")    
+                ->title('Paramètres mis à jour')
                 ->success()
                 ->send();
-        } catch(Exception $ex) {
+        } catch (Exception $ex) {
             Notification::make()
-                ->title("Erreur")
+                ->title('Erreur')
                 ->body($ex->getMessage())
                 ->danger()
                 ->send();
         }
     }
-
-
 }

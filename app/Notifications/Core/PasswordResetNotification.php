@@ -1,13 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\Core;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PasswordResetNotification extends Notification
+final class PasswordResetNotification extends Notification
 {
     use Queueable;
 
@@ -32,15 +33,15 @@ class PasswordResetNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("Réinitialisation de mot de passe")
+            ->subject('Réinitialisation de mot de passe')
             ->greeting("Bonjour {$notifiable->name},")
-            ->line("Votre mot de passe à été réinitialisé.")
-            ->line("Voici vos nouvelles informations de connexion :")
+            ->line('Votre mot de passe à été réinitialisé.')
+            ->line('Voici vos nouvelles informations de connexion :')
             ->line("Email : {$notifiable->email}")
             ->line("Mot de passe : {$this->password}")
             ->line("N'oubliez pas de changer votre mot de passe une fois connecté.")
-            ->line("Merci de ne pas répondre à ce mail.")
-            ->action("Se connecter", url('/login'));
+            ->line('Merci de ne pas répondre à ce mail.')
+            ->action('Se connecter', url('/login'));
     }
 
     /**

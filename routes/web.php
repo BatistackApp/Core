@@ -14,8 +14,8 @@ Route::get('/test', function (): void {
     dd($api->get('/license/info', ['license_key' => 'SRV-20251017-9S3N8']));
 });
 
-Route::middleware(['auth'])->group(function (): void {    
-    
+Route::middleware(['auth'])->group(function (): void {
+
     Route::redirect('settings', 'settings/profile');
 
     Volt::route('settings/profile', 'settings.profile')->name('profile.edit');

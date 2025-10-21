@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -10,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class UserController extends Controller
+final class UserController extends Controller
 {
     public function list(Request $request): string
     {
@@ -38,7 +40,6 @@ class UserController extends Controller
         // Notification utilisateur
         $user->notify(new \App\Notifications\Core\CreateUserNotification($password));
 
-
         return $user->toJson();
     }
 
@@ -46,7 +47,7 @@ class UserController extends Controller
     {
         $user = User::findOrFail($user_id);
 
-        if($request->query('blocked')) {
+        if ($request->query('blocked')) {
             try {
                 $user->update([
                     'blocked' => $request->query('blocked'),
@@ -58,7 +59,7 @@ class UserController extends Controller
             try {
                 $validated = $request->validate([
                     'name' => 'required|string|max:255',
-                    'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+                    'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
                     'role' => 'required|string|max:255',
                 ]);
 
