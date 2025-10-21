@@ -21,6 +21,11 @@ class Tiers extends Model
         return $this->hasMany(TiersAddress::class);
     }
 
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(TiersContact::class);
+    }
+
     public function getNextId(): int|float
     {
         return $this->id ? $this->id + 1 : 1;
