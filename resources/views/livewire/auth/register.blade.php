@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
+use Illuminate\Http\Request;
 
 new #[Layout('components.layouts.auth')] class extends Component {
     public string $name = '';

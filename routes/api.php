@@ -14,4 +14,8 @@ Route::prefix('core')->group(function (): void {
 
 Route::prefix('users')->group(function (): void {
     Route::get('/', [UserController::class, 'list']);
+    Route::post('/', [UserController::class, 'create']);
+    Route::get('/{user_id}/password-reset', [UserController::class, 'passwordReset']);
+    Route::put('/{user_id}', [UserController::class, 'update']);
+    Route::delete('/{user_id}', [UserController::class, 'delete']);
 });

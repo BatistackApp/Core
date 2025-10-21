@@ -37,7 +37,6 @@ final class AdminPanelProvider extends PanelProvider
             ->path('dashboard')
             ->brandName("Batistack")
             ->brandLogo(Storage::url('logos/batistack_long_color.png'))
-            
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -83,8 +82,7 @@ final class AdminPanelProvider extends PanelProvider
             $modules = \App\Models\Core\Module::query()->where('is_active', true)->get();
 
             $fetchs = $modules->map(fn(Module $module): \SolutionForest\FilamentHeaderSelect\Components\HeaderSelect => HeaderSelect::make($module->slug)
-                ->label($module->name)
-                ->url(fn (): string => route('dashboard')));
+                ->label($module->name));
 
             return $fetchs->toArray();
         } catch (Exception) {
