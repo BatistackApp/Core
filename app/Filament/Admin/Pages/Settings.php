@@ -5,7 +5,10 @@ namespace App\Filament\Admin\Pages;
 use App\Models\Core\Company;
 use Filament\Pages\Page;
 use BackedEnum;
+use Exception;
+use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
@@ -21,7 +24,7 @@ class Settings extends Page implements HasSchemas
     public ?array $data = [];
 
     public function mount()
-    {
+    {        
         $this->form->fill(Company::query()->first()->toArray());
     }
 
@@ -83,9 +86,35 @@ class Settings extends Page implements HasSchemas
                                     ]), 
                             ]),  
                     ])                    
-                    ->collapsible(),
+                    ->collapsible()
+                    ->footer([
+                        Action::make('submit')
+                            ->label("Valider")
+                            ->action(fn () => $this->updateSetting()),
+                    ]),
             ])
             ->statePath('data');
+    }
+
+    public function updateSetting()
+    {
+        dd($this->form->getState());
+        try {
+            Company::query()
+            ->first()
+            ->update($this->form->getState());
+
+            Notification::make()
+                ->title("Paramètres mis à jour")    
+                ->success()
+                ->send();
+        } catch(Exception $ex) {
+            Notification::make()
+                ->title("Erreur")
+                ->body($ex->getMessage())
+                ->danger()
+                ->send();
+        }
     }
 
 
