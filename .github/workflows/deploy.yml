@@ -266,7 +266,7 @@ jobs:
         run: composer install --optimize-autoloader --no-interaction --prefer-dist
 
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -480,7 +480,7 @@ jobs:
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
