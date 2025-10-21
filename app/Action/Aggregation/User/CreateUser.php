@@ -13,9 +13,9 @@ final readonly class CreateUser
 {
     public function __construct(private Bridge $bridge) {}
 
-    public function get(): string|null
+    public function get(): ?string
     {
-        $company = \App\Models\Core\Company::query()->first();
+        $company = Company::query()->first();
 
         // Création du compte si il n'existe pas
         if (! $company->bridge_client_id) {

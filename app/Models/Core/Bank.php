@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 
 final class Bank extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
     public $timestamps = false;
 
     protected $guarded = [];
