@@ -37,6 +37,11 @@ class Tiers extends Model
         return $this->hasOne(TiersCustomer::class);
     }
 
+    public function banks(): HasMany
+    {
+        return $this->hasMany(TiersBank::class);
+    }
+
     public function getNextId(): int|float
     {
         return $this->id ? $this->id + 1 : 1;
