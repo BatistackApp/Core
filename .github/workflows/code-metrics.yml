@@ -13,12 +13,12 @@ on:
       create_issue:
         description: 'Créer une issue en cas de problème'
         required: false
-        default: 'true'
+        default: true
         type: boolean
       slack_notification:
         description: 'Envoyer une notification Slack'
         required: false
-        default: 'true'
+        default: true
         type: boolean
 
 env:

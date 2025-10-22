@@ -88,6 +88,13 @@ final class InstallApp extends Command
 
         if (! isset($response['id'])) {
             $this->error('Installation du service impossible');
+            return;
+        }
+
+        // Ensure all necessary keys are present before using them
+        if (! isset($response['service_code']) || ! isset($response['status']) || ! isset($response['max_user']) || ! isset($response['storage_limit'])) {
+            $this->error('Installation du service impossible: Missing additional required response data.');
+            return;
         }
 
         info("Installation du service : {$response['id']}");
@@ -113,6 +120,12 @@ final class InstallApp extends Command
 
         if (! isset($response['product']['features'])) {
             $this->error('Installation des modules impossible');
+            return;
+        }
+
+        if (! isset($response['modules'])) {
+            $this->error('Installation des modules impossible: Missing modules data.');
+            return;
         }
 
         $this->info('Installation des modules');
@@ -140,6 +153,7 @@ final class InstallApp extends Command
 
         if (! isset($response['options'])) {
             $this->error('Installation des options impossible');
+            return;
         }
 
         $this->info('Installation des options');
@@ -189,11 +203,14 @@ final class InstallApp extends Command
 
             foreach ($chunk as $city) {
                 $latLong = explode(',', (string) $city['coordonnees_gps']);
+                $latitude = $latLong[0] ?? null;
+                $longitude = $latLong[1] ?? null;
+
                 \App\Models\Core\City::query()->updateOrCreate(['postal_code' => $city['Code_postal']], [
                     'city' => $city['Nom_commune'],
                     'postal_code' => $city['Code_postal'],
-                    'latitude' => $latLong[0],
-                    'longitude' => $latLong[1],
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
                 ]);
                 $bar->advance();
             }
@@ -414,3 +431,4 @@ final class InstallApp extends Command
         }
     }
 }
+
