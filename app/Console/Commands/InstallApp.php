@@ -45,18 +45,18 @@ final class InstallApp extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): int
+    public function handle(Batistack $batistack): int
     {
         $license_key = $this->argument('license_key');
 
-        $this->verifKey($license_key);
-        $this->installService($license_key);
-        $this->installModules($license_key);
-        $this->installOptions($license_key);
+        $this->verifKey($license_key, $batistack);
+        $this->installService($license_key, $batistack);
+        $this->installModules($license_key, $batistack);
+        $this->installOptions($license_key, $batistack);
         $this->installCities();
         $this->installCountries();
         $this->installPcg();
-        $this->defineCompanyInfo($license_key);
+        $this->defineCompanyInfo($license_key, $batistack);
         $this->installConditionReglement();
         $this->installModeReglement();
 
@@ -66,10 +66,9 @@ final class InstallApp extends Command
     /**
      * Vérification de la clé d'activation.
      */
-    private function verifKey(string $license_key): void
+    private function verifKey(string $license_key, Batistack $batistack): void
     {
-        $api = new Batistack();
-        $response = $api->get('/license/info', ['license_key' => $license_key]);
+        $response = $batistack->get('/license/info', ['license_key' => $license_key]);
 
         if (! isset($response['id'])) {
             $this->error('License key invalide');
@@ -81,10 +80,9 @@ final class InstallApp extends Command
     /**
      * Installation du service.
      */
-    private function installService(string $license_key): void
+    private function installService(string $license_key, Batistack $batistack): void
     {
-        $api = new Batistack();
-        $response = $api->get('/license/info', ['license_key' => $license_key]);
+        $response = $batistack->get('/license/info', ['license_key' => $license_key]);
 
         if (! isset($response['id'])) {
             $this->error('Installation du service impossible');
@@ -113,10 +111,9 @@ final class InstallApp extends Command
     /**
      * Installation des modules.
      */
-    private function installModules(string $license_key): void
+    private function installModules(string $license_key, Batistack $batistack): void
     {
-        $api = new Batistack();
-        $response = $api->get('/license/info', ['license_key' => $license_key]);
+        $response = $batistack->get('/license/info', ['license_key' => $license_key]);
 
         if (! isset($response['product']['features'])) {
             $this->error('Installation des modules impossible');
@@ -146,10 +143,9 @@ final class InstallApp extends Command
     /**
      * Installation des options.
      */
-    private function installOptions(string $license_key): void
+    private function installOptions(string $license_key, Batistack $batistack): void
     {
-        $api = new Batistack();
-        $response = $api->get('/license/info', ['license_key' => $license_key]);
+        $response = $batistack->get('/license/info', ['license_key' => $license_key]);
 
         if (! isset($response['options'])) {
             $this->error('Installation des options impossible');
@@ -272,10 +268,9 @@ final class InstallApp extends Command
         }
     }
 
-    private function defineCompanyInfo(string $license_key): void
+    private function defineCompanyInfo(string $license_key, Batistack $batistack): void
     {
-        $api = new Batistack();
-        $response = $api->get('/license/info', ['license_key' => $license_key]);
+        $response = $batistack->get('/license/info', ['license_key' => $license_key]);
         $hasBankAggregation = false;
         $bridge_client_id = null;
 

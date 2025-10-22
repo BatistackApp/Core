@@ -9,7 +9,7 @@ use App\Services\Bridge;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
-final readonly class DeleteUser
+class DeleteUser
 {
     // Delete the user from the bridge API
     public function __construct(private Bridge $bridge) {}
