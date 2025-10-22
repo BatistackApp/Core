@@ -97,6 +97,16 @@ jobs:
           php artisan migrate --force
           ./vendor/bin/pest --coverage --coverage-clover=reports/metrics/coverage.xml --coverage-html=reports/metrics/coverage
 
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          files: reports/metrics/coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          
+
       - name: 🎨 Check code style
         run: |
           ./vendor/bin/pint --test > reports/metrics/pint.txt || echo "Style issues detected"

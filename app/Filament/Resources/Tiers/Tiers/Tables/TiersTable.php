@@ -15,7 +15,7 @@ class TiersTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(Tiers::with('addresse', 'contacts', 'supply', 'customer'))
+            ->query(Tiers::with('addresses', 'contacts', 'supply', 'customer'))
             ->columns([
                 TextColumn::make('id')
                     ->label("#")

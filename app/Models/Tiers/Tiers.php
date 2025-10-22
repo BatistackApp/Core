@@ -17,6 +17,7 @@ class Tiers extends Model
     protected $guarded = [];
     public $timestamps = false;
 
+
     public function addresses(): HasMany
     {
         return $this->hasMany(TiersAddress::class);
