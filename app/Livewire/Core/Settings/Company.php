@@ -18,7 +18,11 @@ use Livewire\Component;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 
+#[Title("Paramètre de la société")]
+#[Layout("components.layouts.core")]
 class Company extends Component implements HasSchemas, HasActions
 {
     use InteractsWithSchemas, InteractsWithActions;
