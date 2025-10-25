@@ -20,10 +20,11 @@
         "lightningcss-linux-x64-gnu": "^1.29.1"
     },
     "devDependencies": {
-        "@tauri-apps/cli": "^2.2.2",
         "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/git": "^10.0.1",
         "@semantic-release/github": "^11.0.3",
+        "@tauri-apps/cli": "^2.2.2",
+        "daisyui": "^5.3.9",
         "semantic-release": "^24.2.5"
     }
 }

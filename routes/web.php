@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Core\Settings\Company;
 use App\Services\Batistack;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -34,6 +35,10 @@ Route::middleware(['auth'])->group(function (): void {
             ),
         )
         ->name('two-factor.show');
+
+    Route::prefix('core')->group(function () {
+        Route::get('/company', Company::class)->name('core.settings.company');
+    });  
 });
 
 require __DIR__.'/auth.php';
