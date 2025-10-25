@@ -18,3 +18,9 @@ Route::prefix('users')->group(function (): void {
     Route::put('/{user_id}', [UserController::class, 'update']);
     Route::delete('/{user_id}', [UserController::class, 'delete']);
 });
+
+Route::get('/status', function () {
+    return response()->json([
+        'status' => 'ok',
+    ]);
+});
