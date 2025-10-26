@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Jobs\Core;
 
 use App\Enums\Core\ServiceStatus;
+use App\Models\Core\Bank;
 use App\Models\Core\Option;
 use App\Models\Core\Service;
 use App\Services\Batistack;
+use App\Services\Bridge;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -35,6 +37,7 @@ final class SyncOptionJob implements ShouldQueue
             'pack-signature' => $this->syncPackSignature(),
             'sauvegarde-et-retentions' => $this->syncSauvegardeRetentions(),
             'extension-stockages' => $this->syncExtensionStockages(),
+            'aggregation-bancaire' => $this->syncAggregationBancaire(),
             default => null
         };
     }
@@ -76,5 +79,25 @@ final class SyncOptionJob implements ShouldQueue
     private function syncExtensionStockages(): void
     {
         //
+    }
+
+    /**
+     * Synchronisation de l'aggregation bancaire.
+     */
+    private function syncAggregationBancaire(): void
+    {
+        $banks = app(Bridge::class)->get('/providers');
+
+        if (count(Bank::all()) === 0) {
+            foreach ($banks['resources'] as $bank) {
+                Bank::query()->create([
+                    'bridge_id' => $bank['id'],
+                    'name' => $bank['name'],
+                    'logo_bank' => $bank['images']['logo'],
+                    'status_aggregation' => $bank['health_status']['aggregation']['status'],
+                    'status_payment' => $bank['health_status']['single_payment']['status'],
+                ]);
+            }
+        }        
     }
 }

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Core\Page\Notification;
+use App\Livewire\Core\Settings\Company;
 use App\Services\Batistack;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -16,7 +18,10 @@ Route::get('/test', function (): void {
 
 Route::middleware(['auth'])->group(function (): void {
 
-    Route::redirect('settings', 'settings/profile');
+    Route::get('dashboard', fn (): Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory => view('dashboard'))->name('dashboard');
+    Route::get('notifications', Notification::class)->name('notifications');
+
+    Route::redirect('settings', 'settings/profile')->name('settings.profile');
 
     Volt::route('settings/profile', 'settings.profile')->name('profile.edit');
     Volt::route('settings/password', 'settings.password')->name('password.edit');
@@ -32,6 +37,10 @@ Route::middleware(['auth'])->group(function (): void {
             ),
         )
         ->name('two-factor.show');
+
+    Route::prefix('core')->group(function () {
+        Route::get('/company', Company::class)->name('core.settings.company');
+    });  
 });
 
 require __DIR__.'/auth.php';

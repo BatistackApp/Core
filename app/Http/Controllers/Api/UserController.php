@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Core\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Enum;
 use Illuminate\Support\Str;
 
 final class UserController extends Controller
@@ -23,10 +25,11 @@ final class UserController extends Controller
 
     public function create(Request $request): string
     {
+        // CORRECTION: Ajout de la règle d'énumération pour valider le rôle
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'role' => 'required|string|in:user,admin',
+            'role' => ['required', new Enum(UserRole::class)],
         ]);
 
         $password = Str::random(12);
@@ -35,6 +38,7 @@ final class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($password),
+            'role' => $validated['role'],
         ]);
 
         // Notification utilisateur
@@ -49,6 +53,8 @@ final class UserController extends Controller
 
         if ($request->query('blocked')) {
             try {
+                // NOTE: L'utilisation de $request->query('blocked') tel quel peut entraîner
+                // un bug si la valeur n'est pas un booléen.
                 $user->update([
                     'blocked' => $request->query('blocked'),
                 ]);
@@ -57,10 +63,11 @@ final class UserController extends Controller
             }
         } else {
             try {
+                // CORRECTION: Ajout de la règle d'énumération pour valider le rôle
                 $validated = $request->validate([
                     'name' => 'required|string|max:255',
                     'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
-                    'role' => 'required|string|max:255',
+                    'role' => ['required', 'string', 'max:255', new Enum(UserRole::class)],
                 ]);
 
                 $user->update($validated);

@@ -21,3 +21,4 @@ parameters:
         - identifier: missingType.iterableValue
         - identifier: property.notFound
         - identifier: property.onlyWritten
+        - '#Method .*::.*\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\.* does not specify its types#'

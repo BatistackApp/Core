@@ -6,7 +6,7 @@ namespace App\Models\Core;
 
 use Illuminate\Database\Eloquent\Model;
 
-final class ConditionReglement extends Model
+class ConditionReglement extends Model
 {
     public $timestamps = false;
 

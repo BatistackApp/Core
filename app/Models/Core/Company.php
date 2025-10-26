@@ -7,7 +7,7 @@ namespace App\Models\Core;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-final class Company extends Model
+class Company extends Model
 {
     /** @use HasFactory<\Database\Factories\Core\CompanyFactory> */
     use HasFactory;

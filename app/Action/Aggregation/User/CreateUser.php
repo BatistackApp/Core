@@ -9,7 +9,7 @@ use App\Services\Bridge;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
-final readonly class CreateUser
+class CreateUser
 {
     public function __construct(private Bridge $bridge) {}
 

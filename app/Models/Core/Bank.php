@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Models\Core;
 
 use App\Enums\Core\BankStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-final class Bank extends Model
+class Bank extends Model
 {
+    /** @use HasFactory<\Database\Factories\Core\BankFactory> */
+    use HasFactory;
+
     public $timestamps = false;
 
     protected $guarded = [];

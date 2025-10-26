@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('bridge_id');
             $table->string('name');
             $table->string('logo_bank');
-            $table->string('status_aggegation')->nullable();
+            $table->string('status_aggregation')->nullable();
             $table->string('status_payment')->nullable();
         });
     }

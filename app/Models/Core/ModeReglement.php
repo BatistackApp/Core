@@ -6,7 +6,7 @@ namespace App\Models\Core;
 
 use Illuminate\Database\Eloquent\Model;
 
-final class ModeReglement extends Model
+class ModeReglement extends Model
 {
 
     public $timestamps = false;

@@ -6,8 +6,13 @@ namespace App\Models\Core;
 
 use Illuminate\Database\Eloquent\Model;
 
-final class Option extends Model
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class Option extends Model
 {
+    /** @use HasFactory<\Database\Factories\Core\OptionFactory> */
+    use HasFactory;
+    
     protected $guarded = [];
 
     private array $cast = [

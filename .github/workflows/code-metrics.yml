@@ -13,12 +13,12 @@ on:
       create_issue:
         description: 'Créer une issue en cas de problème'
         required: false
-        default: 'true'
+        default: true
         type: boolean
       slack_notification:
         description: 'Envoyer une notification Slack'
         required: false
-        default: 'true'
+        default: true
         type: boolean
 
 env:
@@ -96,6 +96,16 @@ jobs:
         run: |
           php artisan migrate --force
           ./vendor/bin/pest --coverage --coverage-clover=reports/metrics/coverage.xml --coverage-html=reports/metrics/coverage
+
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          files: reports/metrics/coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          
 
       - name: 🎨 Check code style
         run: |
