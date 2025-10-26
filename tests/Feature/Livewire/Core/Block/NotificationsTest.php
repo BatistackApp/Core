@@ -1,9 +1,13 @@
 <?php
 
 use App\Livewire\Core\Block\Notifications;
+use App\Models\User;
 use Livewire\Livewire;
 
-it('renders successfully', function () {
-    Livewire::test(Notifications::class)
+it("Accès aux notifications non lues", function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    Livewire::test(Notifications::class, ['notifications' => $user->unreadNotifications])
         ->assertStatus(200);
 });
