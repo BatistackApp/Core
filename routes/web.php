@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Core\Page\Notification;
 use App\Livewire\Core\Settings\Company;
 use App\Services\Batistack;
 use Illuminate\Support\Facades\Route;
@@ -18,7 +19,7 @@ Route::get('/test', function (): void {
 Route::middleware(['auth'])->group(function (): void {
 
     Route::get('dashboard', fn (): Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory => view('dashboard'))->name('dashboard');
-    Route::get('notifications')->name('notifications');
+    Route::get('notifications', Notification::class)->name('notifications');
 
     Route::redirect('settings', 'settings/profile')->name('settings.profile');
 
