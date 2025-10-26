@@ -7,7 +7,7 @@ namespace App\Models\Core;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-final class Module extends Model
+class Module extends Model
 {
 
     protected $appends = ['name_formated'];

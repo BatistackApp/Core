@@ -331,7 +331,7 @@ final class InstallApp extends Command
                         'bridge_id' => $bank['id'],
                         'name' => $bank['name'],
                         'logo_bank' => $bank['images']['logo'],
-                        'status_aggegation' => $bank['health_status']['aggregation']['status'] ?? null,
+                        'status_aggregation' => $bank['health_status']['aggregation']['status'] ?? null,
                         'status_payment' => $bank['health_status']['single_payment']['status'] ?? null,
                     ]);
                     $progress->advance();
@@ -347,7 +347,7 @@ final class InstallApp extends Command
                         'bridge_id' => 1,
                         'name' => 'Banque de Test',
                         'logo_bank' => 'https://bank.test',
-                        'status_aggegation' => 'healthy',
+                        'status_aggregation' => 'healthy',
                         'status_payment' => 'healthy',
                     ]);
                 }
