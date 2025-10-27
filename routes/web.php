@@ -41,6 +41,8 @@ Route::middleware(['auth'])->group(function (): void {
     Route::prefix('core')->group(function () {
         Route::get('/company', Company::class)->name('core.settings.company');
     });  
+
+    include("tiers.php");
 });
 
 require __DIR__.'/auth.php';
