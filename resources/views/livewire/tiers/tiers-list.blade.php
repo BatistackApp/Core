@@ -1,3 +1,5 @@
 <div>
-    {{-- The best athlete wants his opponent at his best. --}}
+    {{ $this->table }}
+
+    <x-filament-actions::modals />
 </div>
