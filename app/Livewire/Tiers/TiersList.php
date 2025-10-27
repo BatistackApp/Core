@@ -65,7 +65,7 @@ class TiersList extends Component implements HasActions, HasSchemas, HasTable
                 Action::make('create_url')
                     ->label('Créer un tier')
                     ->color('primary')
-                    ->url("#"),    
+                    ->url(route('tiers.create')),
             ])
             ->recordActions([
                 Action::make('edit_url')

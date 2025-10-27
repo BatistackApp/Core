@@ -45,4 +45,8 @@ return [
         'callback_url' => env('BRIDGE_CALLBACK_URL'),
     ],
 
+    'siren_api' => [
+        'key' => env('SIREN_API_KEY'),
+    ],
+
 ];

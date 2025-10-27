@@ -10,8 +10,8 @@ enum TiersNature : string
     public static function array(): array
     {
         return [
-            'fournisseur',
-            'client',
+            'fournisseur' => self::Fournisseur->value,
+            'client' => self::Client->value,
         ];
     }
 
