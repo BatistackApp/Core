@@ -42,7 +42,7 @@ jobs:
       violations-count: ${{ steps.quality-check.outputs.violations }}
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -216,7 +216,7 @@ jobs:
     if: always() && (needs.quality-gate.outputs.quality-status == 'failed' || github.event.inputs.slack_notification == 'true')
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🔴 Create GitHub Issue on failure
         if: needs.quality-gate.outputs.quality-status == 'failed' && (github.event.inputs.create_issue == 'true' || github.event.inputs.create_issue == '')

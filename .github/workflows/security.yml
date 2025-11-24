@@ -44,7 +44,7 @@ jobs:
       security-status: ${{ steps.security-summary.outputs.status }}
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Historique complet pour l'analyse des secrets
 
@@ -241,7 +241,7 @@ jobs:
       dependency-vulnerabilities: ${{ steps.dependency-analysis.outputs.vuln-count }}
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
@@ -451,7 +451,7 @@ jobs:
     if: always()
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 📥 Download security reports
         if: always()

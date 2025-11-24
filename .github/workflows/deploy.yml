@@ -92,7 +92,7 @@ jobs:
           echo "Commit actuel: ${{ github.sha }}"
 
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🔍 Verify all critical workflows status
         if: github.event_name == 'workflow_run'
@@ -246,7 +246,7 @@ jobs:
       staging-url: ${{ steps.deploy.outputs.staging-url }}
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
@@ -460,7 +460,7 @@ jobs:
       production-url: ${{ steps.deploy.outputs.production-url }}
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
