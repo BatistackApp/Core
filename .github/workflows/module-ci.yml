@@ -84,7 +84,7 @@ jobs:
       all-modules: ${{ steps.detect.outputs.all-modules }}
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 2
 
@@ -167,7 +167,7 @@ jobs:
     if: needs.detect-changes.outputs.has-changes == 'true'
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
@@ -213,7 +213,7 @@ jobs:
         module: ${{ fromJson(needs.detect-changes.outputs.modules-json) }}
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
@@ -279,7 +279,7 @@ jobs:
     if: needs.detect-changes.outputs.has-changes == 'true' && (needs.detect-environment.outputs.environment == 'staging' || needs.detect-environment.outputs.environment == 'production')
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
@@ -321,7 +321,7 @@ jobs:
     if: needs.detect-changes.outputs.has-changes == 'true'
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
@@ -361,7 +361,7 @@ jobs:
     if: needs.detect-changes.outputs.has-changes == 'true'
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
