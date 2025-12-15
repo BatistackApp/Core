@@ -227,7 +227,7 @@ jobs:
 
       - name: 📤 Upload security reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: security-deep-scan-${{ github.sha }}
           path: reports/security/
@@ -438,7 +438,7 @@ jobs:
 
       - name: 📤 Upload dependency reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dependency-check-${{ github.sha }}
           path: reports/dependencies/
