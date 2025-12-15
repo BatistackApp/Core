@@ -188,7 +188,7 @@ jobs:
 
       - name: 📧 Upload Email Content
         if: success() && steps.email.outputs.email_generated == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: changelog-email-${{ steps.semantic_release.outputs.version }}
           path: email_content.html
